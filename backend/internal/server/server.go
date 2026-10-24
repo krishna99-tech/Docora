@@ -85,8 +85,8 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 	r.Use(middleware.CORS(cfg.FrontendURL))
 
 	// Health check endpoints (root level for Docker/Nginx probes)
-	r.GET("/healthz", healthHandler.Healthz)
-	r.GET("/readyz", healthHandler.Readyz)
+	r.Any("/healthz", healthHandler.Healthz)
+	r.Any("/readyz", healthHandler.Readyz)
 
 	// OpenAPI and Swagger UI
 	RegisterOpenAPIRoutes(r)

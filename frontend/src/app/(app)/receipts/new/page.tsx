@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
 import { ItemInput } from '@/types';
+import { DocumentLayoutPicker, DocumentLayoutConfig } from '@/components/layout/document-layout-picker';
 
 export default function NewReceiptPage() {
   const router = useRouter();
@@ -24,6 +25,13 @@ export default function NewReceiptPage() {
   const [notes, setNotes] = useState('Thank you for your business!');
   const [terms, setTerms] = useState('All sales are final.');
   const [templateVersionId, setTemplateVersionId] = useState('');
+  const [layoutConfig, setLayoutConfig] = useState<DocumentLayoutConfig>({
+    preset: 'modern',
+    pageSize: 'A4',
+    orientation: 'portrait',
+    headerAlignment: 'split',
+    tableDensity: 'comfortable',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -236,6 +244,9 @@ export default function NewReceiptPage() {
             </div>
           </div>
         </Card>
+
+        {/* Document Layout & Alignment Settings */}
+        <DocumentLayoutPicker config={layoutConfig} onChange={setLayoutConfig} />
 
         {/* Line Items Card */}
         <Card>

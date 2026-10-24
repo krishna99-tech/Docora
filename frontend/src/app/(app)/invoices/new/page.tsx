@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
 import { ItemInput } from '@/types';
+import { DocumentLayoutPicker, DocumentLayoutConfig } from '@/components/layout/document-layout-picker';
 
 export default function NewInvoicePage() {
   const router = useRouter();
@@ -29,6 +30,13 @@ export default function NewInvoicePage() {
   const [notes, setNotes] = useState('Payment is due within 30 days of invoice date.');
   const [terms, setTerms] = useState('Late payments may incur an interest fee of 1.5% per month.');
   const [templateVersionId, setTemplateVersionId] = useState('');
+  const [layoutConfig, setLayoutConfig] = useState<DocumentLayoutConfig>({
+    preset: 'modern',
+    pageSize: 'A4',
+    orientation: 'portrait',
+    headerAlignment: 'split',
+    tableDensity: 'comfortable',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -237,6 +245,9 @@ export default function NewInvoicePage() {
             </div>
           </div>
         </Card>
+
+        {/* Document Layout & Alignment Settings */}
+        <DocumentLayoutPicker config={layoutConfig} onChange={setLayoutConfig} />
 
         {/* Line Items Card */}
         <Card>
