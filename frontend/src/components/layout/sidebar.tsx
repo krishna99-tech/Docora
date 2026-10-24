@@ -103,12 +103,12 @@ export function Sidebar() {
 
         {/* Quick Action Button */}
         <div className="p-3">
-          <Link href="/receipts/new">
+          <Link href="/receipts/new" onClick={() => { if (isMobile) closeMobile(); }}>
             <Button
               variant="default"
               size="sm"
               className={cn(
-                'w-full font-semibold transition-all',
+                'w-full font-semibold transition-all min-h-[40px]',
                 isTabletCollapsed && !isMobile ? 'px-0 justify-center' : 'justify-start'
               )}
               title="Create New Receipt"
@@ -129,8 +129,9 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 title={item.label}
+                onClick={() => { if (isMobile) closeMobile(); }}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md transition-colors',
+                  'flex items-center gap-3 px-3 py-2.5 sm:py-2 text-xs font-semibold rounded-md transition-colors min-h-[40px] sm:min-h-0',
                   isTabletCollapsed && !isMobile ? 'justify-center px-2' : '',
                   isActive
                     ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
@@ -162,7 +163,7 @@ export function Sidebar() {
 
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-md hover:bg-[var(--surface-hover)] text-[var(--foreground)] transition-colors cursor-pointer shrink-0"
+            className="p-2 sm:p-1.5 rounded-md hover:bg-[var(--surface-hover)] text-[var(--foreground)] transition-colors cursor-pointer shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
             title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
             aria-label="Toggle theme"
           >
@@ -173,7 +174,7 @@ export function Sidebar() {
         <button
           onClick={logout}
           className={cn(
-            'flex items-center gap-2 px-2 py-1.5 text-xs text-[var(--muted-foreground)] hover:text-red-500 rounded transition-colors w-full cursor-pointer',
+            'flex items-center gap-2 px-2 py-2 sm:py-1.5 text-xs text-[var(--muted-foreground)] hover:text-red-500 rounded transition-colors w-full cursor-pointer min-h-[38px] sm:min-h-0',
             isTabletCollapsed && !isMobile ? 'justify-center px-0' : ''
           )}
           title="Sign Out"
@@ -208,11 +209,13 @@ export function Sidebar() {
 
       {/* 3. Mobile Off-Canvas Drawer */}
       <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile Navigation"
         className={cn(
           'fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-[var(--sidebar-background)] border-r border-[var(--sidebar-border)] text-[var(--sidebar-foreground)] md:hidden shadow-2xl transition-transform duration-300 ease-in-out',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
-        aria-label="Mobile Navigation"
       >
         {renderNav(true)}
       </aside>

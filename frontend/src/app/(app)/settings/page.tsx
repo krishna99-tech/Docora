@@ -244,7 +244,7 @@ export default function SettingsPage() {
           </Card>
 
           <div className="flex justify-end pt-2">
-            <Button type="submit" variant="default" isLoading={isSaving}>
+            <Button type="submit" variant="default" isLoading={isSaving} className="w-full sm:w-auto font-semibold">
               <Save className="w-3.5 h-3.5 mr-1" />
               Save Configuration
             </Button>

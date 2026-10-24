@@ -114,8 +114,8 @@ export default function EditInvoicePage() {
         description="Update terms and deliverables before issuance"
       />
 
-      <div className="p-8 max-w-5xl space-y-6">
-        <Link href={`/invoices/${id}`}>
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-4 sm:space-y-6">
+        <Link href={`/invoices/${id}`} className="inline-block">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-3.5 h-3.5 mr-1" />
             Back to Invoice
@@ -151,6 +151,7 @@ export default function EditInvoicePage() {
           <div className="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-4">
             <div>
               <CardTitle>Line Items</CardTitle>
+              <CardDescription>Modify items and unit prices</CardDescription>
             </div>
             <Button size="sm" variant="outline" onClick={addItem}>
               <Plus className="w-3.5 h-3.5 mr-1" />
@@ -162,56 +163,71 @@ export default function EditInvoicePage() {
             {items.map((item, idx) => (
               <div
                 key={idx}
-                className="grid grid-cols-12 gap-3 items-center p-3 rounded-md bg-[var(--surface-secondary)] border border-[var(--border)]"
+                className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center p-3 sm:p-4 rounded-md bg-[var(--surface-secondary)] border border-[var(--border)]"
               >
-                <div className="col-span-12 md:col-span-5">
+                <div className="md:col-span-5">
+                  <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
+                    Description
+                  </label>
                   <Input
                     placeholder="Description"
                     value={item.description}
                     onChange={(e) => updateItem(idx, 'description', e.target.value)}
                   />
                 </div>
-                <div className="col-span-4 md:col-span-2">
-                  <Input
-                    type="number"
-                    step="any"
-                    value={item.quantity}
-                    onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                  />
+                <div className="grid grid-cols-2 gap-2 md:contents">
+                  <div className="md:col-span-2">
+                    <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
+                      Qty
+                    </label>
+                    <Input
+                      type="number"
+                      step="any"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
+                      Unit Price ($)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={item.unitPrice}
+                      onChange={(e) => updateItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
                 </div>
-                <div className="col-span-4 md:col-span-2">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={item.unitPrice}
-                    onChange={(e) => updateItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-                <div className="col-span-3 md:col-span-2 text-right font-mono font-bold text-xs">
-                  ${(item.quantity * item.unitPrice).toFixed(2)}
-                </div>
-                <div className="col-span-1 text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeItem(idx)}
-                    disabled={items.length <= 1}
-                    className="text-red-500"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
+                <div className="flex md:contents items-center justify-between pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
+                  <div className="md:col-span-2 md:text-right font-mono font-bold text-xs text-[var(--foreground)]">
+                    <span className="md:hidden text-[var(--muted-foreground)] font-normal mr-2">Total:</span>
+                    ${(item.quantity * item.unitPrice).toFixed(2)}
+                  </div>
+                  <div className="md:col-span-1 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeItem(idx)}
+                      disabled={items.length <= 1}
+                      className="text-red-500 hover:text-red-600"
+                      aria-label="Remove item"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
           <div className="mt-6 pt-4 border-t border-[var(--border)] flex justify-end">
-            <div className="w-64 space-y-2 text-xs">
-              <div className="flex justify-between">
+            <div className="w-full sm:w-72 space-y-2 text-xs">
+              <div className="flex justify-between text-[var(--muted-foreground)]">
                 <span>Subtotal:</span>
-                <span className="font-semibold">{formatCurrency(subtotal * 100, doc?.currency)}</span>
+                <span className="font-semibold text-[var(--foreground)]">{formatCurrency(subtotal * 100, doc?.currency)}</span>
               </div>
-              <div className="flex justify-between font-bold pt-2 border-t border-[var(--border)] text-sm">
+              <div className="flex justify-between font-bold pt-2 border-t border-[var(--border)] text-sm text-[var(--foreground)]">
                 <span>Total:</span>
                 <span>{formatCurrency(grandTotal * 100, doc?.currency)}</span>
               </div>
@@ -219,11 +235,11 @@ export default function EditInvoicePage() {
           </div>
         </Card>
 
-        <div className="flex justify-end gap-2">
-          <Link href={`/invoices/${id}`}>
-            <Button variant="ghost">Cancel</Button>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
+          <Link href={`/invoices/${id}`} className="w-full sm:w-auto">
+            <Button variant="ghost" className="w-full sm:w-auto">Cancel</Button>
           </Link>
-          <Button variant="default" onClick={handleSave} isLoading={isSubmitting}>
+          <Button variant="default" onClick={handleSave} isLoading={isSubmitting} className="w-full sm:w-auto">
             <Save className="w-3.5 h-3.5 mr-1" />
             Done Editing
           </Button>

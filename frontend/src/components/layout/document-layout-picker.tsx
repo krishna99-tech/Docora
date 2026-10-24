@@ -28,12 +28,12 @@ export function DocumentLayoutPicker({ config, onChange }: DocumentLayoutPickerP
   return (
     <Card className="border border-[var(--border)] bg-[var(--surface)]">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Layout className="w-4 h-4 text-[var(--foreground)]" />
+            <Layout className="w-4 h-4 text-[var(--foreground)] shrink-0" />
             <CardTitle>Layout & Alignment Settings</CardTitle>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-[var(--surface-secondary)] border border-[var(--border)] text-[var(--muted-foreground)]">
               {config.pageSize}
             </span>

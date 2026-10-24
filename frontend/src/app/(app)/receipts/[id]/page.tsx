@@ -83,15 +83,23 @@ export default function ReceiptDetailPage() {
 
       <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
         {/* Navigation & Actions Topbar */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link href="/receipts">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <Link href="/receipts" className="self-start">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-3.5 h-3.5 mr-1" />
               All Receipts
             </Button>
           </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {doc.status === 'draft' && (
+              <Link href={`/receipts/${doc.id}/edit`}>
+                <Button variant="outline" size="sm">
+                  Edit Draft
+                </Button>
+              </Link>
+            )}
+
             <Button variant="outline" size="sm" onClick={() => setIsPreviewOpen(true)}>
               <Eye className="w-3.5 h-3.5 mr-1" />
               Preview PDF
@@ -135,7 +143,7 @@ export default function ReceiptDetailPage() {
 
         {/* Overview Banner */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="flex items-center gap-3">
+          <Card className="flex items-center gap-3 p-3.5 sm:p-4">
             <div className="p-2.5 rounded-lg bg-[var(--surface-secondary)] text-[var(--foreground)]">
               <FileText className="w-5 h-5" />
             </div>
@@ -145,7 +153,7 @@ export default function ReceiptDetailPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-3">
+          <Card className="flex items-center gap-3 p-3.5 sm:p-4">
             <div className="p-2.5 rounded-lg bg-[var(--surface-secondary)] text-[var(--foreground)]">
               <Calendar className="w-5 h-5" />
             </div>
@@ -155,7 +163,7 @@ export default function ReceiptDetailPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-3">
+          <Card className="flex items-center gap-3 p-3.5 sm:p-4">
             <div className="p-2.5 rounded-lg bg-[var(--surface-secondary)] text-[var(--foreground)]">
               <CreditCard className="w-5 h-5" />
             </div>
@@ -165,7 +173,7 @@ export default function ReceiptDetailPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-3">
+          <Card className="flex items-center gap-3 p-3.5 sm:p-4">
             <div>
               <div className="text-[10px] uppercase font-bold text-[var(--muted-foreground)]">Status</div>
               <div className="mt-1">
@@ -176,7 +184,7 @@ export default function ReceiptDetailPage() {
         </div>
 
         {/* Customer & Payment Meta */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm">Customer Information</CardTitle>
@@ -220,37 +228,39 @@ export default function ReceiptDetailPage() {
 
         {/* Items Table */}
         <Card className="p-0 overflow-hidden">
-          <div className="px-6 py-4 border-b border-[var(--border)] font-bold text-sm">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-[var(--border)] font-bold text-sm">
             Purchased Items
           </div>
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase font-semibold">
-              <tr>
-                <th className="py-3 px-4">Item</th>
-                <th className="py-3 px-4 text-center">Qty</th>
-                <th className="py-3 px-4 text-right">Unit Price</th>
-                <th className="py-3 px-4 text-right">Tax Rate</th>
-                <th className="py-3 px-4 text-right">Line Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {doc.items?.map((item) => (
-                <tr key={item.id}>
-                  <td className="py-3 px-4 font-semibold">{item.description}</td>
-                  <td className="py-3 px-4 text-center">{item.quantity}</td>
-                  <td className="py-3 px-4 text-right">{formatCurrency(item.unitPriceMinor, doc.currency)}</td>
-                  <td className="py-3 px-4 text-right">{(item.taxRate * 100).toFixed(1)}%</td>
-                  <td className="py-3 px-4 text-right font-bold">
-                    {formatCurrency(item.lineTotalMinor, doc.currency)}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs min-w-[500px]">
+              <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase font-semibold">
+                <tr>
+                  <th className="py-3 px-4">Item</th>
+                  <th className="py-3 px-4 text-center">Qty</th>
+                  <th className="py-3 px-4 text-right">Unit Price</th>
+                  <th className="py-3 px-4 text-right">Tax Rate</th>
+                  <th className="py-3 px-4 text-right">Line Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)]">
+                {doc.items?.map((item) => (
+                  <tr key={item.id}>
+                    <td className="py-3 px-4 font-semibold">{item.description}</td>
+                    <td className="py-3 px-4 text-center">{item.quantity}</td>
+                    <td className="py-3 px-4 text-right">{formatCurrency(item.unitPriceMinor, doc.currency)}</td>
+                    <td className="py-3 px-4 text-right">{(item.taxRate * 100).toFixed(1)}%</td>
+                    <td className="py-3 px-4 text-right font-bold">
+                      {formatCurrency(item.lineTotalMinor, doc.currency)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Totals Summary */}
-          <div className="p-6 bg-[var(--surface-secondary)] border-t border-[var(--border)] flex justify-end">
-            <div className="w-64 space-y-2 text-xs">
+          <div className="p-4 sm:p-6 bg-[var(--surface-secondary)] border-t border-[var(--border)] flex justify-end">
+            <div className="w-full sm:w-72 space-y-2 text-xs">
               <div className="flex justify-between text-[var(--muted-foreground)]">
                 <span>Subtotal:</span>
                 <span className="font-semibold text-[var(--foreground)]">

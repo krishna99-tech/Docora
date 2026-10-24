@@ -39,15 +39,15 @@ COPY --from=builder /app/migrations /app/migrations
 RUN mkdir -p /app/storage && chown -R docora:docora /app
 
 ENV APP_ENV=production \
-    APP_PORT=8086 \
+    APP_PORT=8087 \
     CHROME_BIN=/usr/bin/chromium-browser \
     DOCUMENT_STORAGE_PATH=/app/storage
 
 USER docora
 
-EXPOSE 8086
+EXPOSE 8087
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -q -O /dev/null http://127.0.0.1:8086/healthz || exit 1
+    CMD wget -q -O /dev/null http://127.0.0.1:8087/healthz || exit 1
 
 CMD ["/app/api"]
