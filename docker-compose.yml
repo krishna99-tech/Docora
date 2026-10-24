@@ -24,12 +24,14 @@ services:
       dockerfile: Dockerfile
     container_name: docora_backend
     restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8086}:8086"
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       APP_ENV: ${APP_ENV:-production}
-      APP_PORT: 8080
+      APP_PORT: 8086
       DATABASE_URL: postgres://${POSTGRES_USER:-docora_user}:${POSTGRES_PASSWORD:-docora_secure_password_123}@postgres:5432/${POSTGRES_DB:-docora_db}?sslmode=disable
       JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_docora_receipt_platform_min_32_chars!}
       AUTH_ACCESS_TOKEN_TTL: ${AUTH_ACCESS_TOKEN_TTL:-15m}
@@ -38,11 +40,11 @@ services:
       DOCUMENT_STORAGE_PATH: /app/storage
       PDF_RENDERER: chromedp
       CHROME_BIN: /usr/bin/chromium-browser
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3005}
     volumes:
       - storage_data:/app/storage
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8086/healthz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -56,12 +58,14 @@ services:
       dockerfile: Dockerfile
     container_name: docora_frontend
     restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3005}:3005"
     depends_on:
       backend:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 3005
       NEXT_PUBLIC_API_BASE_URL: /api/v1
     networks:
       - docora_network

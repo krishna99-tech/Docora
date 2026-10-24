@@ -38,7 +38,7 @@ Docora is an enterprise-grade, production-oriented web platform engineered for c
               +----------+----------+
               |                     |
               v                     v
-     Next.js Frontend (:3000)   Go REST API (:8080)
+     Next.js Frontend (:3005)   Go REST API (:8086)
                                     |
                 +-------------------+------------------+
                 |                   |                  |
@@ -166,11 +166,11 @@ The platform strictly uses a high-contrast black-and-white theme.
    ```
 
 5. Access the application:
-   - **Frontend Application**: `http://localhost` (or `http://localhost:3000`)
-   - **Go Backend API**: `http://localhost/api/v1`
-   - **Swagger / OpenAPI Documentation**: `http://localhost/swagger`
-   - **Healthcheck Endpoint**: `http://localhost/healthz`
-   - **Readiness Probe**: `http://localhost/readyz`
+   - **Frontend Application**: `http://localhost:3005` (or `http://localhost` via Nginx)
+   - **Go Backend API**: `http://localhost:8086/api/v1` (or `http://localhost/api/v1` via Nginx)
+   - **Swagger / OpenAPI Documentation**: `http://localhost:8086/swagger` (or `http://localhost/swagger`)
+   - **Healthcheck Endpoint**: `http://localhost:8086/healthz`
+   - **Readiness Probe**: `http://localhost:8086/readyz`
 
 ---
 
@@ -193,7 +193,7 @@ go mod download
 go test ./tests/... -v
 go run ./cmd/api/main.go
 ```
-The backend starts on `http://localhost:8080`.
+The backend starts on `http://localhost:8086`.
 
 #### 3. Start Next.js Frontend
 ```bash
@@ -201,7 +201,7 @@ cd frontend
 npm install
 npm run dev
 ```
-The frontend starts on `http://localhost:3000`.
+The frontend starts on `http://localhost:3005`.
 
 ---
 

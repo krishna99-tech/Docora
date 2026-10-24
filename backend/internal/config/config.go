@@ -30,10 +30,10 @@ func LoadConfig() (*Config, error) {
 	_ = godotenv.Load("../../.env")
 
 	appEnv := getEnv("APP_ENV", "development")
-	appPort := getEnv("APP_PORT", "8080")
+	appPort := getEnv("APP_PORT", "8086")
 	dbURL := getEnv("DATABASE_URL", "postgres://docora_user:docora_secure_password_123@localhost:5432/docora_db?sslmode=disable")
 	jwtSecret := getEnv("JWT_SECRET", "super_secret_jwt_key_docora_receipt_platform_min_32_chars!")
-	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
+	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3005")
 
 	accessTTLStr := getEnv("AUTH_ACCESS_TOKEN_TTL", "15m")
 	accessTTL, err := time.ParseDuration(accessTTLStr)

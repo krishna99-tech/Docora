@@ -19,7 +19,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3005
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Non-root user
@@ -31,6 +31,6 @@ COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/.next ./.next
 COPY --from=builder --chown=node:node /app/public ./public
 
-EXPOSE 3000
+EXPOSE 3005
 
 CMD ["npm", "start"]
