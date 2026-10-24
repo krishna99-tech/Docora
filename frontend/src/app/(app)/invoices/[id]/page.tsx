@@ -80,7 +80,7 @@ export default function InvoiceDetailPage() {
         description={`Status: ${doc.status.toUpperCase()} | Issued: ${formatDate(doc.issueDate)}`}
       />
 
-      <div className="p-8 max-w-5xl space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link href="/invoices">
             <Button variant="ghost" size="sm">
@@ -131,7 +131,7 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card className="flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-[var(--surface-secondary)] text-[var(--foreground)]">
               <FileSpreadsheet className="w-5 h-5" />

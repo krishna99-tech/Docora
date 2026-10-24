@@ -157,7 +157,7 @@ export default function GeneralPDFGeneratorPage() {
         description="Design and compile custom business PDFs, statements, and reports"
       />
 
-      <div className="p-8 max-w-5xl space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
         {error && (
           <div className="p-4 text-xs bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg">
             {error}
@@ -377,10 +377,11 @@ export default function GeneralPDFGeneratorPage() {
         </Card>
 
         {/* Generate Actions */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
+            className="w-full sm:w-auto"
             onClick={() => handleGenerate(true)}
             isLoading={isGenerating}
           >
@@ -391,6 +392,7 @@ export default function GeneralPDFGeneratorPage() {
           <Button
             type="button"
             variant="default"
+            className="w-full sm:w-auto"
             onClick={() => handleGenerate(false)}
             isLoading={isGenerating}
           >

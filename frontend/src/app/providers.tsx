@@ -18,8 +18,18 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
+interface NavigationContextType {
+  isMobileOpen: boolean;
+  setIsMobileOpen: (open: boolean) => void;
+  toggleMobile: () => void;
+  closeMobile: () => void;
+  isTabletCollapsed: boolean;
+  toggleTabletCollapse: () => void;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -30,6 +40,12 @@ export function useAuth() {
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) throw new Error('useTheme must be used within Providers');
+  return context;
+}
+
+export function useNavigation() {
+  const context = useContext(NavigationContext);
+  if (!context) throw new Error('useNavigation must be used within Providers');
   return context;
 }
 
@@ -50,6 +66,23 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isTabletCollapsed, setIsTabletCollapsed] = useState(false);
+
+  const toggleMobile = () => setIsMobileOpen((prev) => !prev);
+  const closeMobile = () => setIsMobileOpen(false);
+  const toggleTabletCollapse = () => setIsTabletCollapsed((prev) => !prev);
+
+  // Close mobile drawer when resizing up to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Initialize theme from localStorage or system preference
   useEffect(() => {
@@ -114,9 +147,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeContext.Provider value={{ theme, toggleTheme }}>
-        <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
-          {children}
-        </AuthContext.Provider>
+        <NavigationContext.Provider
+          value={{
+            isMobileOpen,
+            setIsMobileOpen,
+            toggleMobile,
+            closeMobile,
+            isTabletCollapsed,
+            toggleTabletCollapse,
+          }}
+        >
+          <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+            {children}
+          </AuthContext.Provider>
+        </NavigationContext.Provider>
       </ThemeContext.Provider>
     </QueryClientProvider>
   );

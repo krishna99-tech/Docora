@@ -135,7 +135,7 @@ export default function NewReceiptPage() {
         description="Fill in transaction details to generate an authoritative receipt"
       />
 
-      <div className="p-8 max-w-5xl space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
         <div className="flex items-center gap-2">
           <Link href="/receipts">
             <Button variant="ghost" size="sm">
@@ -265,9 +265,12 @@ export default function NewReceiptPage() {
             {items.map((item, idx) => (
               <div
                 key={idx}
-                className="grid grid-cols-12 gap-3 items-center p-3 rounded-md bg-[var(--surface-secondary)] border border-[var(--border)]"
+                className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center p-3 sm:p-4 rounded-md bg-[var(--surface-secondary)] border border-[var(--border)]"
               >
-                <div className="col-span-12 md:col-span-4">
+                <div className="md:col-span-4">
+                  <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
+                    Description
+                  </label>
                   <Input
                     placeholder="Item description"
                     value={item.description}
@@ -276,53 +279,68 @@ export default function NewReceiptPage() {
                   />
                 </div>
 
-                <div className="col-span-6 md:col-span-2">
-                  <Input
-                    type="number"
-                    step="any"
-                    min="0.01"
-                    placeholder="Qty"
-                    value={item.quantity}
-                    onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                  />
+                <div className="grid grid-cols-3 gap-2 md:contents">
+                  <div className="md:col-span-2">
+                    <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
+                      Qty
+                    </label>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0.01"
+                      placeholder="Qty"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
+                      Unit ($)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Unit Price ($)"
+                      value={item.unitPrice}
+                      onChange={(e) => updateItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
+                      Tax
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="Tax (e.g. 0.05)"
+                      value={item.taxRate}
+                      onChange={(e) => updateItem(idx, 'taxRate', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
                 </div>
 
-                <div className="col-span-6 md:col-span-2">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Unit Price ($)"
-                    value={item.unitPrice}
-                    onChange={(e) => updateItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
-                  />
-                </div>
+                <div className="flex md:contents items-center justify-between pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
+                  <div className="md:col-span-1 md:text-right font-mono font-bold text-xs text-[var(--foreground)]">
+                    <span className="md:hidden text-[var(--muted-foreground)] font-normal mr-2">Total:</span>
+                    ${((item.quantity * item.unitPrice) * (1 + item.taxRate)).toFixed(2)}
+                  </div>
 
-                <div className="col-span-6 md:col-span-2">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="Tax Rate (e.g. 0.05)"
-                    value={item.taxRate}
-                    onChange={(e) => updateItem(idx, 'taxRate', parseFloat(e.target.value) || 0)}
-                  />
-                </div>
-
-                <div className="col-span-5 md:col-span-1 text-right font-mono font-bold text-xs">
-                  ${((item.quantity * item.unitPrice) * (1 + item.taxRate)).toFixed(2)}
-                </div>
-
-                <div className="col-span-1 text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeItem(idx)}
-                    disabled={items.length <= 1}
-                    className="text-red-500 hover:text-red-600"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
+                  <div className="md:col-span-1 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeItem(idx)}
+                      disabled={items.length <= 1}
+                      className="text-red-500 hover:text-red-600"
+                      aria-label="Remove item"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -396,10 +414,11 @@ export default function NewReceiptPage() {
         </Card>
 
         {/* Submit Buttons */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2">
           <Button
             type="button"
             variant="outline"
+            className="w-full sm:w-auto"
             onClick={() => handleSubmit(false)}
             isLoading={isSubmitting}
           >
@@ -410,6 +429,7 @@ export default function NewReceiptPage() {
           <Button
             type="button"
             variant="default"
+            className="w-full sm:w-auto"
             onClick={() => handleSubmit(true)}
             isLoading={isSubmitting}
           >

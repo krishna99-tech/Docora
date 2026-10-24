@@ -81,7 +81,7 @@ export default function ReceiptDetailPage() {
         description={`Status: ${doc.status.toUpperCase()} | Created: ${formatDate(doc.createdAt)}`}
       />
 
-      <div className="p-8 max-w-5xl space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
         {/* Navigation & Actions Topbar */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link href="/receipts">
@@ -134,7 +134,7 @@ export default function ReceiptDetailPage() {
         </div>
 
         {/* Overview Banner */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card className="flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-[var(--surface-secondary)] text-[var(--foreground)]">
               <FileText className="w-5 h-5" />

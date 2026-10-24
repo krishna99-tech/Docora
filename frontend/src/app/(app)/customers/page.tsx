@@ -88,7 +88,7 @@ export default function CustomersPage() {
         action={{ label: 'New Customer', onClick: openCreateModal }}
       />
 
-      <div className="p-8 space-y-6 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
         {/* Search */}
         <div className="flex items-center justify-between">
           <div className="relative w-full sm:w-80">
@@ -106,8 +106,8 @@ export default function CustomersPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <Card className="p-0 overflow-hidden">
+        {/* Desktop & Tablet Table */}
+        <Card className="p-0 overflow-hidden hidden sm:block">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase font-semibold">
@@ -177,6 +177,56 @@ export default function CustomersPage() {
             </table>
           </div>
         </Card>
+
+        {/* Mobile Customer Cards (< 640px) */}
+        <div className="sm:hidden space-y-3">
+          {isLoading ? (
+            <Card className="p-8 text-center text-xs text-[var(--muted-foreground)]">
+              Loading customers...
+            </Card>
+          ) : !data || data.data.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Users className="w-8 h-8 text-[var(--muted-foreground)] mx-auto mb-2" />
+              <p className="font-semibold text-xs">No customers recorded yet</p>
+              <Button size="sm" variant="default" onClick={openCreateModal} className="mt-3">
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                Add Customer
+              </Button>
+            </Card>
+          ) : (
+            data.data.map((c) => (
+              <Card key={c.id} className="p-4 space-y-2 border border-[var(--border)]">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-[var(--foreground)]">{c.name}</span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => openEditModal(c)}
+                    >
+                      <Edit2 className="w-3.5 h-3.5 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
+                      onClick={() => handleDelete(c.id)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="text-xs text-[var(--muted-foreground)] space-y-0.5">
+                  {c.email && <div>Email: {c.email}</div>}
+                  {c.phone && <div>Phone: {c.phone}</div>}
+                  {c.address && <div className="truncate">Address: {c.address}</div>}
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Create / Edit Modal */}

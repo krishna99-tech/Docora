@@ -76,15 +76,15 @@ export default function TemplatesPage() {
         action={{ label: 'New Template', onClick: () => setIsCreateOpen(true) }}
       />
 
-      <div className="p-8 space-y-6 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
         {/* Filter Bar */}
         <div className="flex items-center justify-between">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {['', 'receipt', 'invoice', 'general'].map((t) => (
               <button
                 key={t}
                 onClick={() => setDocTypeFilter(t)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer capitalize ${
+                className={`px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer capitalize ${
                   docTypeFilter === t
                     ? 'bg-[var(--primary)] text-[var(--primary-foreground)]'
                     : 'bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--surface-hover)]'
@@ -97,7 +97,7 @@ export default function TemplatesPage() {
         </div>
 
         {/* Templates Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {isLoading ? (
             <div className="col-span-full py-12 text-center text-xs text-[var(--muted-foreground)]">
               Loading templates...
@@ -109,7 +109,7 @@ export default function TemplatesPage() {
             </div>
           ) : (
             templates.map((tmpl) => (
-              <Card key={tmpl.id} className="flex flex-col justify-between h-64 border border-[var(--border)] shadow-xs">
+              <Card key={tmpl.id} className="flex flex-col justify-between min-h-[220px] border border-[var(--border)] shadow-xs">
                 <div>
                   <div className="flex items-start justify-between">
                     <div>

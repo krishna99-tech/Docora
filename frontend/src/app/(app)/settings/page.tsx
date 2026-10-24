@@ -78,7 +78,7 @@ export default function SettingsPage() {
         description="Configure your business identity, default document currency, and appearance"
       />
 
-      <div className="p-8 max-w-4xl space-y-6">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full space-y-6">
         {savedSuccess && (
           <div className="p-4 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-lg flex items-center gap-2">
             <CheckCircle className="w-4 h-4" />

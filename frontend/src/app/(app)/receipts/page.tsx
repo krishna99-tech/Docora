@@ -69,9 +69,9 @@ export default function ReceiptsPage() {
         action={{ label: 'New Receipt', href: '/receipts/new' }}
       />
 
-      <div className="p-8 space-y-6 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
         {/* Filters and search bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative w-full sm:w-80">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
             <input
@@ -93,7 +93,7 @@ export default function ReceiptsPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
+              className="w-full sm:w-auto px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
             >
               <option value="">All Statuses</option>
               <option value="draft">Draft</option>
@@ -103,8 +103,8 @@ export default function ReceiptsPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <Card className="p-0 overflow-hidden">
+        {/* Desktop & Tablet Table */}
+        <Card className="p-0 overflow-hidden hidden sm:block">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase font-semibold">
@@ -209,7 +209,7 @@ export default function ReceiptsPage() {
 
           {/* Pagination */}
           {data && data.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--border)] bg-[var(--surface-secondary)] text-xs">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 border-t border-[var(--border)] bg-[var(--surface-secondary)] text-xs">
               <span className="text-[var(--muted-foreground)]">
                 Page {data.page} of {data.totalPages} ({data.total} total)
               </span>
@@ -234,6 +234,93 @@ export default function ReceiptsPage() {
             </div>
           )}
         </Card>
+
+        {/* Mobile Cards View (< 640px) */}
+        <div className="sm:hidden space-y-3">
+          {isLoading ? (
+            <Card className="p-8 text-center text-xs text-[var(--muted-foreground)]">
+              Loading receipts...
+            </Card>
+          ) : !data || data.data.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Receipt className="w-8 h-8 text-[var(--muted-foreground)] mx-auto mb-2" />
+              <p className="font-semibold text-xs">No receipts found</p>
+              <Link href="/receipts/new">
+                <Button size="sm" variant="default" className="mt-3">
+                  <Plus className="w-3.5 h-3.5 mr-1" />
+                  New Receipt
+                </Button>
+              </Link>
+            </Card>
+          ) : (
+            data.data.map((doc) => (
+              <Card key={doc.id} className="p-4 space-y-2.5 border border-[var(--border)]">
+                <div className="flex items-center justify-between">
+                  <Link href={`/receipts/${doc.id}`} className="font-mono font-bold text-xs hover:underline">
+                    {doc.documentNumber}
+                  </Link>
+                  <Badge status={doc.status} />
+                </div>
+                <div className="text-xs text-[var(--muted-foreground)] flex items-center justify-between">
+                  <span>{doc.customer?.name || 'Walk-in Customer'}</span>
+                  <span>{formatDate(doc.issueDate)}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-[var(--border)]">
+                  <div>
+                    <span className="text-[10px] text-[var(--muted-foreground)] block">Total</span>
+                    <span className="font-bold text-xs text-[var(--foreground)]">
+                      {formatCurrency(doc.totalMinor, doc.currency)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => handleOpenPreview(doc.id, doc.documentNumber, doc.status)}
+                    >
+                      <Eye className="w-3.5 h-3.5 mr-1" />
+                      Preview
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => api.downloadDocument(doc.id, `${doc.documentNumber}.pdf`)}
+                    >
+                      <Download className="w-3.5 h-3.5 mr-1" />
+                      PDF
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))
+          )}
+
+          {data && data.totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2 text-xs">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={data.page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-[var(--muted-foreground)] text-xs">
+                {data.page} / {data.totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={data.page >= data.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <PDFViewerModal

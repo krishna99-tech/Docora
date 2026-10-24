@@ -77,28 +77,28 @@ export default function DashboardPage() {
         description="Overview of your business documents, revenue, and recent activities"
       />
 
-      <div className="p-8 space-y-8 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto w-full">
         {/* Quick Actions Row */}
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]">
           <div>
             <h2 className="text-sm font-bold text-[var(--foreground)]">Quick Actions</h2>
             <p className="text-xs text-[var(--muted-foreground)]">Generate documents in seconds</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href="/receipts/new">
-              <Button size="sm" variant="default">
+          <div className="grid grid-cols-1 xs:grid-cols-3 sm:flex sm:items-center gap-2">
+            <Link href="/receipts/new" className="w-full sm:w-auto">
+              <Button size="sm" variant="default" className="w-full">
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 Create Receipt
               </Button>
             </Link>
-            <Link href="/invoices/new">
-              <Button size="sm" variant="secondary">
+            <Link href="/invoices/new" className="w-full sm:w-auto">
+              <Button size="sm" variant="secondary" className="w-full">
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 Create Invoice
               </Button>
             </Link>
-            <Link href="/pdf-generator">
-              <Button size="sm" variant="outline">
+            <Link href="/pdf-generator" className="w-full sm:w-auto">
+              <Button size="sm" variant="outline" className="w-full">
                 <FileText className="w-3.5 h-3.5 mr-1" />
                 Generate PDF
               </Button>
@@ -107,11 +107,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {statCards.map((card, idx) => {
             const Icon = card.icon;
             return (
-              <Card key={idx} className="relative overflow-hidden">
+              <Card key={idx} className="relative overflow-hidden p-4 sm:p-5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
                     {card.label}
@@ -133,7 +133,7 @@ export default function DashboardPage() {
           })}
         </div>
 
-        {/* Recent Documents Table */}
+        {/* Recent Documents Section */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
@@ -142,13 +142,14 @@ export default function DashboardPage() {
             </div>
             <Link href="/documents">
               <Button variant="ghost" size="sm" className="text-xs">
-                View All Documents
+                View All
                 <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
               </Button>
             </Link>
           </div>
 
-          <Card className="p-0 overflow-hidden">
+          {/* Desktop & Tablet Table View */}
+          <Card className="p-0 overflow-hidden hidden sm:block">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase font-semibold">
@@ -221,6 +222,58 @@ export default function DashboardPage() {
               </table>
             </div>
           </Card>
+
+          {/* Mobile Card View (< 640px) */}
+          <div className="sm:hidden space-y-2.5">
+            {docsLoading ? (
+              <Card className="p-6 text-center text-xs text-[var(--muted-foreground)]">
+                Loading documents...
+              </Card>
+            ) : !recentDocs || recentDocs.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Clock className="w-7 h-7 text-[var(--muted-foreground)] mx-auto mb-2" />
+                <p className="font-semibold text-xs">No documents yet</p>
+              </Card>
+            ) : (
+              recentDocs.map((doc) => (
+                <Card key={doc.id} className="p-3.5 space-y-2 border border-[var(--border)]">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono font-bold text-xs">{doc.documentNumber}</span>
+                    <Badge status={doc.status} />
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+                    <span className="capitalize">{doc.documentType} • {doc.customer?.name || 'Walk-in'}</span>
+                    <span>{formatDate(doc.issueDate)}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-[var(--border)]">
+                    <span className="font-bold text-xs text-[var(--foreground)]">
+                      {formatCurrency(doc.totalMinor, doc.currency)}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => handleOpenPreview(doc.id, doc.documentNumber, doc.status)}
+                      >
+                        <Eye className="w-3.5 h-3.5 mr-1" />
+                        Preview
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => api.downloadDocument(doc.id, `${doc.documentNumber}.pdf`)}
+                      >
+                        <Download className="w-3.5 h-3.5 mr-1" />
+                        PDF
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
         </div>
       </div>
 

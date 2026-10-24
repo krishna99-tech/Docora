@@ -39,6 +39,15 @@ export default function DocumentLibraryPage() {
       }),
   });
 
+  const handleOpenPreview = (id: string, num: string) => {
+    setPreviewDocId(id);
+    setPreviewDocNumber(num);
+  };
+
+  const handleDownload = (id: string, num: string) => {
+    api.downloadDocument(id, `${num}.pdf`);
+  };
+
   const handleDeleteDraft = async (id: string) => {
     if (!confirm('Are you sure you want to permanently delete this draft?')) return;
     try {
@@ -56,10 +65,10 @@ export default function DocumentLibraryPage() {
         description="Comprehensive archive of all issued receipts, invoices, and compiled PDFs"
       />
 
-      <div className="p-8 space-y-6 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
         {/* Search & Filters */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="relative w-full sm:w-80">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
             <input
               type="text"
@@ -73,16 +82,16 @@ export default function DocumentLibraryPage() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full md:w-auto">
             <select
               value={typeFilter}
               onChange={(e) => {
                 setTypeFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
             >
-              <option value="">All Document Types</option>
+              <option value="">All Types</option>
               <option value="receipt">Receipts</option>
               <option value="invoice">Invoices</option>
               <option value="general">General PDFs</option>
@@ -94,7 +103,7 @@ export default function DocumentLibraryPage() {
                 setStatusFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
             >
               <option value="">All Statuses</option>
               <option value="draft">Draft</option>
@@ -111,7 +120,7 @@ export default function DocumentLibraryPage() {
                 setSortBy(sb);
                 setSortOrder(so);
               }}
-              className="px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
             >
               <option value="created_at-desc">Newest First</option>
               <option value="created_at-asc">Oldest First</option>
@@ -123,7 +132,7 @@ export default function DocumentLibraryPage() {
         </div>
 
         {/* Documents Table */}
-        <Card className="p-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden hidden sm:block">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase font-semibold">
@@ -224,7 +233,7 @@ export default function DocumentLibraryPage() {
           </div>
 
           {data && data.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--border)] bg-[var(--surface-secondary)] text-xs">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 border-t border-[var(--border)] bg-[var(--surface-secondary)] text-xs">
               <span className="text-[var(--muted-foreground)]">
                 Page {data.page} of {data.totalPages} ({data.total} total)
               </span>
@@ -249,6 +258,84 @@ export default function DocumentLibraryPage() {
             </div>
           )}
         </Card>
+
+        {/* Mobile Documents Card View (< 640px) */}
+        <div className="sm:hidden space-y-3">
+          {isLoading ? (
+            <Card className="p-8 text-center text-xs text-[var(--muted-foreground)]">
+              Loading documents...
+            </Card>
+          ) : !data || data.data.length === 0 ? (
+            <Card className="p-8 text-center">
+              <FolderArchive className="w-8 h-8 text-[var(--muted-foreground)] mx-auto mb-2" />
+              <p className="font-semibold text-xs">No documents archived yet</p>
+            </Card>
+          ) : (
+            data.data.map((doc) => (
+              <Card key={doc.id} className="p-4 space-y-2.5 border border-[var(--border)]">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-xs">{doc.documentNumber}</span>
+                  <Badge status={doc.status} />
+                </div>
+                <div className="text-xs">
+                  <div className="font-semibold text-[var(--foreground)]">{doc.title}</div>
+                  <div className="text-[var(--muted-foreground)] mt-0.5">
+                    <span className="capitalize">{doc.documentType}</span> • {doc.customer?.name || 'Walk-in'} • {formatDate(doc.issueDate)}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-[var(--border)]">
+                  <span className="font-bold text-xs text-[var(--foreground)]">
+                    {formatCurrency(doc.totalMinor, doc.currency)}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => handleOpenPreview(doc.id, doc.documentNumber)}
+                    >
+                      <Eye className="w-3.5 h-3.5 mr-1" />
+                      Preview
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => handleDownload(doc.id, doc.documentNumber)}
+                    >
+                      <Download className="w-3.5 h-3.5 mr-1" />
+                      PDF
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))
+          )}
+
+          {data && data.totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2 text-xs">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={data.page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-[var(--muted-foreground)] text-xs">
+                {data.page} / {data.totalPages}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={data.page >= data.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* PDF Preview Modal */}

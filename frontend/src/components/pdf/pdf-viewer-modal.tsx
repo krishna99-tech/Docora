@@ -96,17 +96,17 @@ export function PDFViewerModal({
       description="Inspect generated layout, line items, and monetary totals before downloading or printing."
       maxWidth="4xl"
     >
-      <div className="flex flex-col h-[75vh]">
+      <div className="flex flex-col h-[65vh] sm:h-[75vh]">
         {/* Actions Bar */}
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--border)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-[var(--border)]">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleDownload} disabled={isLoading || !blobUrl}>
-              <Download className="w-3.5 h-3.5 mr-1" />
-              Download PDF
+            <Button variant="outline" size="sm" onClick={handleDownload} disabled={isLoading || !blobUrl} className="text-xs">
+              <Download className="w-3.5 h-3.5 mr-1 shrink-0" />
+              <span>Download<span className="hidden xs:inline"> PDF</span></span>
             </Button>
-            <Button variant="outline" size="sm" onClick={handlePrint} disabled={isLoading || !blobUrl}>
-              <Printer className="w-3.5 h-3.5 mr-1" />
-              Print
+            <Button variant="outline" size="sm" onClick={handlePrint} disabled={isLoading || !blobUrl} className="text-xs">
+              <Printer className="w-3.5 h-3.5 mr-1 shrink-0" />
+              <span>Print</span>
             </Button>
           </div>
 
@@ -117,9 +117,10 @@ export function PDFViewerModal({
               onClick={handleFinalize}
               isLoading={isFinalizing}
               disabled={isLoading || !blobUrl}
+              className="text-xs"
             >
-              <CheckCircle className="w-3.5 h-3.5 mr-1" />
-              Finalize Document
+              <CheckCircle className="w-3.5 h-3.5 mr-1 shrink-0" />
+              <span>Finalize<span className="hidden sm:inline"> Document</span></span>
             </Button>
           )}
         </div>
