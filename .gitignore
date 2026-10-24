@@ -38,7 +38,7 @@ backend/vendor/
 *.dylib
 
 # Storage & uploads
-storage/
+/storage/
 uploads/
 *.pdf
 !backend/internal/pdf/templates/*.html
