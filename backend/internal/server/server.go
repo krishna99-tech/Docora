@@ -15,9 +15,11 @@ import (
 	"docora/backend/internal/handlers"
 	"docora/backend/internal/middleware"
 	"docora/backend/internal/pdf"
+	"docora/backend/internal/pdfutils"
 	"docora/backend/internal/repositories"
 	"docora/backend/internal/services"
 	"docora/backend/internal/storage"
+	"docora/backend/internal/verification"
 )
 
 type Server struct {
@@ -55,6 +57,17 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 	templateRepo := repositories.NewTemplateRepository(db)
 	docRepo := repositories.NewDocumentRepository(db)
 	auditRepo := repositories.NewAuditRepository(db)
+	wsRepo := repositories.NewWorkspaceRepository(db)
+	sharingRepo := repositories.NewSharingRepository(db)
+	verificationRepo := repositories.NewVerificationRepository(db)
+	jobsRepo := repositories.NewJobRepository(db)
+	versionRepo := repositories.NewVersionRepository(db)
+	devRepo := repositories.NewDeveloperRepository(db)
+	workflowRepo := repositories.NewWorkflowRepository(db)
+
+	// PDF processor & verifier
+	pdfProcessor := pdfutils.NewProcessor()
+	docVerifier := verification.NewVerifier(cfg.FrontendURL)
 
 	// Services
 	authService := services.NewAuthService(userRepo, cfg)
@@ -63,6 +76,13 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 	templateService := services.NewTemplateService(templateRepo)
 	docService := services.NewDocumentService(docRepo, customerRepo, businessRepo, templateRepo, auditRepo, fileStore, pdfRenderer)
 	dashboardService := services.NewDashboardService(docRepo)
+	wsService := services.NewWorkspaceService(wsRepo, userRepo)
+	sharingService := services.NewSharingService(sharingRepo, docRepo)
+	verificationService := services.NewVerificationService(verificationRepo, docRepo, businessRepo, fileStore, docVerifier)
+	pdfToolsService := services.NewPDFToolsService(pdfProcessor, fileStore, jobsRepo)
+	versionService := services.NewVersionService(versionRepo, docRepo)
+	devService := services.NewDeveloperService(devRepo)
+	workflowService := services.NewWorkflowService(workflowRepo, docRepo)
 
 	// Handlers
 	authHandler := handlers.NewAuthHandler(authService, userRepo)
@@ -71,9 +91,18 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 	templateHandler := handlers.NewTemplateHandler(templateService)
 	receiptHandler := handlers.NewReceiptHandler(docService)
 	invoiceHandler := handlers.NewInvoiceHandler(docService)
+	quotationHandler := handlers.NewQuotationHandler(docService)
+	estimateHandler := handlers.NewEstimateHandler(docService)
 	documentHandler := handlers.NewDocumentHandler(docService)
 	dashboardHandler := handlers.NewDashboardHandler(dashboardService)
 	healthHandler := handlers.NewHealthHandler(db, fileStore)
+	workspaceHandler := handlers.NewWorkspaceHandler(wsService)
+	pdfToolsHandler := handlers.NewPDFToolsHandler(pdfToolsService)
+	sharingHandler := handlers.NewSharingHandler(sharingService, docService, fileStore)
+	verificationHandler := handlers.NewVerificationHandler(verificationService)
+	versionHandler := handlers.NewVersionHandler(versionService)
+	developerHandler := handlers.NewDeveloperHandler(devService)
+	workflowHandler := handlers.NewWorkflowHandler(workflowService)
 
 	// Rate limiter (e.g. 60 req/min for auth)
 	rateLimiter := middleware.NewRateLimiter(60, time.Minute)
@@ -98,6 +127,14 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 		v1.GET("/healthz", healthHandler.Healthz)
 		v1.GET("/readyz", healthHandler.Readyz)
 
+		// Public unauthenticated verification & sharing routes
+		publicGroup := v1.Group("/public")
+		{
+			publicGroup.GET("/verify/:token", verificationHandler.PublicVerify)
+			publicGroup.GET("/share/:token", sharingHandler.GetPublicShareInfo)
+			publicGroup.POST("/share/:token/access", sharingHandler.AccessSharedDocument)
+		}
+
 		// Auth endpoints (with rate limiting)
 		authGroup := v1.Group("/auth")
 		authGroup.Use(rateLimiter.Middleware())
@@ -117,6 +154,14 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			protected.GET("/dashboard/stats", dashboardHandler.GetStats)
 			protected.GET("/dashboard/recent-documents", dashboardHandler.GetRecentDocuments)
 
+			// Workspaces
+			protected.GET("/workspaces", workspaceHandler.List)
+			protected.POST("/workspaces", workspaceHandler.Create)
+			protected.GET("/workspaces/:id", workspaceHandler.Get)
+			protected.GET("/workspaces/:id/members", workspaceHandler.GetMembers)
+			protected.POST("/workspaces/:id/members", workspaceHandler.AddMember)
+			protected.DELETE("/workspaces/:id/members/:userId", workspaceHandler.RemoveMember)
+
 			// Receipts
 			protected.POST("/receipts", receiptHandler.Create)
 			protected.GET("/receipts", receiptHandler.List)
@@ -132,6 +177,55 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			protected.POST("/invoices/:id/preview", invoiceHandler.Preview)
 			protected.POST("/invoices/:id/finalize", invoiceHandler.Finalize)
 			protected.POST("/invoices/:id/cancel", invoiceHandler.Cancel)
+
+			// Quotations
+			protected.POST("/quotations", quotationHandler.Create)
+			protected.GET("/quotations/:id", quotationHandler.Get)
+
+			// Estimates
+			protected.POST("/estimates", estimateHandler.Create)
+			protected.GET("/estimates/:id", estimateHandler.Get)
+
+			// PDF Utilities
+			protected.POST("/pdf-tools/merge", pdfToolsHandler.Merge)
+			protected.POST("/pdf-tools/compress", pdfToolsHandler.Compress)
+			protected.POST("/pdf-tools/rotate", pdfToolsHandler.Rotate)
+			protected.POST("/pdf-tools/watermark", pdfToolsHandler.Watermark)
+			protected.POST("/pdf-tools/page-numbers", pdfToolsHandler.PageNumbers)
+			protected.POST("/pdf-tools/images-to-pdf", pdfToolsHandler.ImagesToPDF)
+			protected.POST("/pdf-tools/metadata", pdfToolsHandler.Metadata)
+			protected.GET("/pdf-tools/jobs", pdfToolsHandler.ListJobs)
+
+			// Secure Sharing
+			protected.POST("/documents/:id/share", sharingHandler.Create)
+			protected.GET("/shared-links", sharingHandler.List)
+			protected.POST("/shared-links/:id/revoke", sharingHandler.Revoke)
+
+			// Cryptographic Verification & Integrity
+			protected.GET("/documents/:id/integrity", verificationHandler.CheckIntegrity)
+
+			// Document Version History
+			protected.GET("/documents/:id/versions", versionHandler.List)
+			protected.POST("/documents/:id/versions", versionHandler.CreateSnapshot)
+			protected.POST("/documents/:id/versions/:version/restore", versionHandler.RestoreDraft)
+
+			// Developer API Keys & Webhooks
+			protected.GET("/developer/keys", developerHandler.ListKeys)
+			protected.POST("/developer/keys", developerHandler.CreateKey)
+			protected.DELETE("/developer/keys/:id", developerHandler.RevokeKey)
+			protected.GET("/developer/webhooks", developerHandler.ListWebhooks)
+			protected.POST("/developer/webhooks", developerHandler.CreateWebhook)
+			protected.DELETE("/developer/webhooks/:id", developerHandler.DeleteWebhook)
+			protected.GET("/developer/webhooks/:id/deliveries", developerHandler.ListDeliveries)
+
+			// Workflow Automation
+			protected.GET("/workflows", workflowHandler.List)
+			protected.POST("/workflows", workflowHandler.Create)
+			protected.GET("/workflows/:id", workflowHandler.Get)
+			protected.POST("/workflows/:id/trigger", workflowHandler.Trigger)
+			protected.GET("/workflows/executions/:id", workflowHandler.GetExecution)
+			protected.GET("/workflows/approvals", workflowHandler.ListApprovals)
+			protected.POST("/workflows/approvals/:id/decide", workflowHandler.DecideApproval)
 
 			// Unified Document Library & General PDF
 			protected.GET("/documents", documentHandler.List)

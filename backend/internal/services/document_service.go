@@ -214,6 +214,112 @@ func (s *DocumentService) CreateInvoice(ctx context.Context, userID uuid.UUID, r
 	return s.docRepo.GetByID(ctx, userID, doc.ID)
 }
 
+func (s *DocumentService) CreateQuotation(ctx context.Context, userID uuid.UUID, req models.CreateQuotationRequest) (*models.Document, error) {
+	calcItems, subtotal, discount, tax, total, balance := CalculateDocumentTotals(req.Items, 0)
+
+	currency := req.Currency
+	if currency == "" {
+		biz, _ := s.businessRepo.GetByUserID(ctx, userID)
+		if biz != nil && biz.Currency != "" {
+			currency = biz.Currency
+		} else {
+			currency = "USD"
+		}
+	}
+
+	title := req.Title
+	if title == "" {
+		title = "Formal Quotation"
+	}
+
+	issueDate := time.Now().UTC()
+	if req.IssueDate != nil {
+		issueDate = *req.IssueDate
+	}
+
+	doc := &models.Document{
+		ID:                uuid.New(),
+		UserID:            userID,
+		CustomerID:        req.CustomerID,
+		DocumentNumber:    req.DocumentNumber,
+		DocumentType:      models.TypeQuotation,
+		Title:             title,
+		Status:            models.StatusDraft,
+		Currency:          currency,
+		SubtotalMinor:     subtotal,
+		DiscountMinor:     discount,
+		TaxMinor:          tax,
+		TotalMinor:        total,
+		AmountPaidMinor:   0,
+		BalanceMinor:      balance,
+		IssueDate:         issueDate,
+		DueDate:           req.DueDate,
+		Notes:             req.Notes,
+		Terms:             req.Terms,
+		TemplateVersionID: req.TemplateVersionID,
+		Items:             calcItems,
+	}
+
+	if err := s.docRepo.Create(ctx, doc); err != nil {
+		return nil, err
+	}
+
+	return s.docRepo.GetByID(ctx, userID, doc.ID)
+}
+
+func (s *DocumentService) CreateEstimate(ctx context.Context, userID uuid.UUID, req models.CreateEstimateRequest) (*models.Document, error) {
+	calcItems, subtotal, discount, tax, total, balance := CalculateDocumentTotals(req.Items, 0)
+
+	currency := req.Currency
+	if currency == "" {
+		biz, _ := s.businessRepo.GetByUserID(ctx, userID)
+		if biz != nil && biz.Currency != "" {
+			currency = biz.Currency
+		} else {
+			currency = "USD"
+		}
+	}
+
+	title := req.Title
+	if title == "" {
+		title = "Project Estimate"
+	}
+
+	issueDate := time.Now().UTC()
+	if req.IssueDate != nil {
+		issueDate = *req.IssueDate
+	}
+
+	doc := &models.Document{
+		ID:                uuid.New(),
+		UserID:            userID,
+		CustomerID:        req.CustomerID,
+		DocumentNumber:    req.DocumentNumber,
+		DocumentType:      models.TypeEstimate,
+		Title:             title,
+		Status:            models.StatusDraft,
+		Currency:          currency,
+		SubtotalMinor:     subtotal,
+		DiscountMinor:     discount,
+		TaxMinor:          tax,
+		TotalMinor:        total,
+		AmountPaidMinor:   0,
+		BalanceMinor:      balance,
+		IssueDate:         issueDate,
+		DueDate:           req.DueDate,
+		Notes:             req.Notes,
+		Terms:             req.Terms,
+		TemplateVersionID: req.TemplateVersionID,
+		Items:             calcItems,
+	}
+
+	if err := s.docRepo.Create(ctx, doc); err != nil {
+		return nil, err
+	}
+
+	return s.docRepo.GetByID(ctx, userID, doc.ID)
+}
+
 func (s *DocumentService) CreateGeneralPDF(ctx context.Context, userID uuid.UUID, req models.CreateGeneralPDFRequest) (*models.Document, error) {
 	metaMap := map[string]interface{}{
 		"pageSize":           req.PageSize,

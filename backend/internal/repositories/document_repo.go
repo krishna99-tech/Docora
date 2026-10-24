@@ -33,6 +33,12 @@ func (r *DocumentRepository) NextDocumentNumber(ctx context.Context, tx pgx.Tx, 
 		prefix = "REC"
 	case models.TypeInvoice:
 		prefix = "INV"
+	case models.TypeQuotation:
+		prefix = "QUO"
+	case models.TypeEstimate:
+		prefix = "EST"
+	case models.TypeStatement:
+		prefix = "STM"
 	}
 
 	query := `

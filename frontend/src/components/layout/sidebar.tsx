@@ -19,6 +19,10 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Wrench,
+  ShieldCheck,
+  Share2,
+  Workflow,
 } from 'lucide-react';
 import { useAuth, useTheme, useNavigation } from '@/app/providers';
 import { cn } from '@/lib/utils';
@@ -26,12 +30,15 @@ import { Button } from '@/components/ui/button';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Documents', href: '/documents', icon: FolderArchive },
   { label: 'Receipts', href: '/receipts', icon: Receipt },
   { label: 'Invoices', href: '/invoices', icon: FileSpreadsheet },
-  { label: 'PDF Generator', href: '/pdf-generator', icon: FileText },
-  { label: 'Documents', href: '/documents', icon: FolderArchive },
+  { label: 'PDF Tools', href: '/pdf-tools', icon: Wrench },
   { label: 'Templates', href: '/templates', icon: Palette },
   { label: 'Customers', href: '/customers', icon: Users },
+  { label: 'Workflows', href: '/workflows', icon: Workflow },
+  { label: 'Verification', href: '/verification', icon: ShieldCheck },
+  { label: 'Shared Links', href: '/shared', icon: Share2 },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 

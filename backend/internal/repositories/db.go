@@ -57,37 +57,94 @@ func (db *DB) Close() {
 }
 
 func (db *DB) RunMigrations(ctx context.Context) error {
-	migrationCandidates := []string{
-		"./migrations/000001_init_schema.up.sql",
-		"../migrations/000001_init_schema.up.sql",
-		"../../migrations/000001_init_schema.up.sql",
-		"/app/migrations/000001_init_schema.up.sql",
+	dirCandidates := []string{
+		"./migrations",
+		"../migrations",
+		"../../migrations",
+		"/app/migrations",
 	}
 
-	var migrationSQL string
-	for _, path := range migrationCandidates {
-		absPath, _ := filepath.Abs(path)
-		data, err := os.ReadFile(absPath)
-		if err == nil {
-			migrationSQL = string(data)
+	var migrationsDir string
+	for _, dir := range dirCandidates {
+		absDir, _ := filepath.Abs(dir)
+		info, err := os.Stat(absDir)
+		if err == nil && info.IsDir() {
+			migrationsDir = absDir
 			break
 		}
 	}
 
-	if migrationSQL == "" {
+	if migrationsDir == "" {
+		log.Println("No migrations directory found, skipping migrations.")
 		return nil
 	}
 
-	// Execute migrations
-	_, err := db.Pool.Exec(ctx, migrationSQL)
+	// Ensure schema_migrations table exists
+	_, err := db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS schema_migrations (
+			version VARCHAR(255) PRIMARY KEY,
+			applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+		);
+	`)
 	if err != nil {
-		// If already initialized, ignore already exists errors
-		if strings.Contains(err.Error(), "already exists") {
-			return nil
-		}
-		return fmt.Errorf("migration execution error: %w", err)
+		return fmt.Errorf("failed to create schema_migrations table: %w", err)
 	}
 
-	log.Println("Database schema migration verified successfully.")
+	entries, err := os.ReadDir(migrationsDir)
+	if err != nil {
+		return fmt.Errorf("failed to read migrations directory: %w", err)
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".up.sql") {
+			continue
+		}
+
+		version := entry.Name()
+		var exists bool
+		err := db.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM schema_migrations WHERE version = $1)", version).Scan(&exists)
+		if err != nil {
+			return fmt.Errorf("failed to check migration status for %s: %w", version, err)
+		}
+
+		if exists {
+			continue
+		}
+
+		filePath := filepath.Join(migrationsDir, version)
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			return fmt.Errorf("failed to read migration file %s: %w", version, err)
+		}
+
+		tx, err := db.Pool.Begin(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to begin transaction for migration %s: %w", version, err)
+		}
+
+		if _, err := tx.Exec(ctx, string(content)); err != nil {
+			_ = tx.Rollback(ctx)
+			// Check if already executed prior to schema_migrations
+			if strings.Contains(err.Error(), "already exists") {
+				log.Printf("Migration %s objects already exist; marking as applied.", version)
+				_, _ = db.Pool.Exec(ctx, "INSERT INTO schema_migrations (version) VALUES ($1) ON CONFLICT DO NOTHING", version)
+				continue
+			}
+			return fmt.Errorf("failed executing migration %s: %w", version, err)
+		}
+
+		if _, err := tx.Exec(ctx, "INSERT INTO schema_migrations (version) VALUES ($1)", version); err != nil {
+			_ = tx.Rollback(ctx)
+			return fmt.Errorf("failed recording migration %s: %w", version, err)
+		}
+
+		if err := tx.Commit(ctx); err != nil {
+			return fmt.Errorf("failed committing migration %s: %w", version, err)
+		}
+
+		log.Printf("Successfully applied migration: %s", version)
+	}
+
+	log.Println("Database schema migrations verified and up-to-date.")
 	return nil
 }

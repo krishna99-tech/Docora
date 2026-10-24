@@ -8,9 +8,12 @@ import (
 )
 
 const (
-	TypeReceipt = "receipt"
-	TypeInvoice = "invoice"
-	TypeGeneral = "general"
+	TypeReceipt   = "receipt"
+	TypeInvoice   = "invoice"
+	TypeQuotation = "quotation"
+	TypeEstimate  = "estimate"
+	TypeStatement = "statement"
+	TypeGeneral   = "general"
 
 	StatusDraft         = "draft"
 	StatusFinalized     = "finalized"
@@ -99,14 +102,15 @@ type DocumentItem struct {
 	SortOrder      int       `json:"sortOrder"`
 }
 
-// Document represents an invoice, receipt, or general document
+// Document represents an invoice, receipt, quotation, estimate, statement, or general document
 type Document struct {
 	ID                uuid.UUID       `json:"id"`
 	UserID            uuid.UUID       `json:"userId"`
+	WorkspaceID       *uuid.UUID      `json:"workspaceId,omitempty"`
 	CustomerID        *uuid.UUID      `json:"customerId,omitempty"`
 	Customer          *Customer       `json:"customer,omitempty"`
 	DocumentNumber    string          `json:"documentNumber"`
-	DocumentType      string          `json:"documentType"` // 'receipt', 'invoice', 'general'
+	DocumentType      string          `json:"documentType"` // 'receipt', 'invoice', 'quotation', 'estimate', 'statement', 'general'
 	Title             string          `json:"title"`
 	Status            string          `json:"status"` // 'draft', 'finalized', etc.
 	Currency          string          `json:"currency"`
@@ -129,8 +133,13 @@ type Document struct {
 	MimeType          string          `json:"mimeType"`
 	FileSize          int64           `json:"fileSize"`
 	SHA256            string          `json:"sha256"`
-	Metadata          json.RawMessage `json:"metadata"` // For general PDF layout/sections
+	Metadata          json.RawMessage `json:"metadata"` // For general PDF layout/sections or type-specific metadata
 	Items             []DocumentItem  `json:"items,omitempty"`
+	IsArchived        bool            `json:"isArchived"`
+	IsFavorite        bool            `json:"isFavorite"`
+	DeletedAt         *time.Time      `json:"deletedAt,omitempty"`
+	Tags              []string        `json:"tags,omitempty"`
+	Category          string          `json:"category,omitempty"`
 	CreatedAt         time.Time       `json:"createdAt"`
 	UpdatedAt         time.Time       `json:"updatedAt"`
 	FinalizedAt       *time.Time      `json:"finalizedAt,omitempty"`
@@ -209,6 +218,39 @@ type CreateInvoiceRequest struct {
 	Terms             string      `json:"terms"`
 	TemplateVersionID *uuid.UUID  `json:"templateVersionId"`
 	Items             []ItemInput `json:"items" binding:"required,min=1"`
+}
+
+type CreateQuotationRequest struct {
+	CustomerID        *uuid.UUID  `json:"customerId"`
+	DocumentNumber    string      `json:"documentNumber"` // Optional, auto-generated if empty
+	Title             string      `json:"title"`
+	Currency          string      `json:"currency"`
+	IssueDate         *time.Time  `json:"issueDate"`
+	DueDate           *time.Time  `json:"validUntil"` // Validity date for quotation
+	Notes             string      `json:"notes"`
+	Terms             string      `json:"terms"`
+	TemplateVersionID *uuid.UUID  `json:"templateVersionId"`
+	Items             []ItemInput `json:"items" binding:"required,min=1"`
+}
+
+type CreateEstimateRequest struct {
+	CustomerID        *uuid.UUID  `json:"customerId"`
+	DocumentNumber    string      `json:"documentNumber"` // Optional, auto-generated if empty
+	Title             string      `json:"title"`
+	Currency          string      `json:"currency"`
+	IssueDate         *time.Time  `json:"issueDate"`
+	DueDate           *time.Time  `json:"estimatedCompletion"`
+	Notes             string      `json:"notes"`
+	Terms             string      `json:"terms"`
+	TemplateVersionID *uuid.UUID  `json:"templateVersionId"`
+	Items             []ItemInput `json:"items" binding:"required,min=1"`
+}
+
+type UpdateDocumentMetaRequest struct {
+	IsArchived *bool    `json:"isArchived,omitempty"`
+	IsFavorite *bool    `json:"isFavorite,omitempty"`
+	Tags       []string `json:"tags,omitempty"`
+	Category   *string  `json:"category,omitempty"`
 }
 
 type GeneralPDFSection struct {
