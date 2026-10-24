@@ -1,0 +1,308 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Search, Eye, Download, Trash2, FolderArchive, Info } from 'lucide-react';
+import { api } from '@/lib/api';
+import { Header } from '@/components/layout/header';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Modal } from '@/components/ui/modal';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { PDFViewerModal } from '@/components/pdf/pdf-viewer-modal';
+import { Document } from '@/types';
+
+export default function DocumentLibraryPage() {
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
+
+  const [previewDocId, setPreviewDocId] = useState<string | null>(null);
+  const [previewDocNumber, setPreviewDocNumber] = useState<string>('');
+  const [selectedMetaDoc, setSelectedMetaDoc] = useState<Document | null>(null);
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['documents-library', search, typeFilter, statusFilter, page, sortBy, sortOrder],
+    queryFn: () =>
+      api.listDocuments({
+        search,
+        type: typeFilter,
+        status: statusFilter,
+        page,
+        pageSize: 15,
+        sortBy,
+        sortOrder,
+      }),
+  });
+
+  const handleDeleteDraft = async (id: string) => {
+    if (!confirm('Are you sure you want to permanently delete this draft?')) return;
+    try {
+      await api.deleteDocument(id);
+      refetch();
+    } catch (err: any) {
+      alert(`Delete error: ${err.message}`);
+    }
+  };
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header
+        title="Document Library"
+        description="Comprehensive archive of all issued receipts, invoices, and compiled PDFs"
+      />
+
+      <div className="p-8 space-y-6 max-w-7xl">
+        {/* Search & Filters */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search by title, number, or customer..."
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <select
+              value={typeFilter}
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
+            >
+              <option value="">All Document Types</option>
+              <option value="receipt">Receipts</option>
+              <option value="invoice">Invoices</option>
+              <option value="general">General PDFs</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+              className="px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
+            >
+              <option value="">All Statuses</option>
+              <option value="draft">Draft</option>
+              <option value="finalized">Finalized</option>
+              <option value="issued">Issued</option>
+              <option value="paid">Paid</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+
+            <select
+              value={`${sortBy}-${sortOrder}`}
+              onChange={(e) => {
+                const [sb, so] = e.target.value.split('-');
+                setSortBy(sb);
+                setSortOrder(so);
+              }}
+              className="px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
+            >
+              <option value="created_at-desc">Newest First</option>
+              <option value="created_at-asc">Oldest First</option>
+              <option value="total-desc">Highest Amount</option>
+              <option value="total-asc">Lowest Amount</option>
+              <option value="document_number-asc">Document # (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Documents Table */}
+        <Card className="p-0 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase font-semibold">
+                <tr>
+                  <th className="py-3 px-4">Document #</th>
+                  <th className="py-3 px-4">Title</th>
+                  <th className="py-3 px-4">Type</th>
+                  <th className="py-3 px-4">Customer</th>
+                  <th className="py-3 px-4">Date</th>
+                  <th className="py-3 px-4 text-right">Total</th>
+                  <th className="py-3 px-4 text-center">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)] text-[var(--foreground)]">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-[var(--muted-foreground)]">
+                      Loading document library...
+                    </td>
+                  </tr>
+                ) : !data || data.data.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-16 text-center">
+                      <FolderArchive className="w-10 h-10 text-[var(--muted-foreground)] mx-auto mb-2" />
+                      <p className="font-semibold text-sm">No documents found</p>
+                      <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                        Try modifying search or filter criteria.
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  data.data.map((doc) => (
+                    <tr key={doc.id} className="hover:bg-[var(--surface-hover)] transition-colors">
+                      <td className="py-3 px-4 font-mono font-bold">{doc.documentNumber}</td>
+                      <td className="py-3 px-4 font-semibold truncate max-w-xs">{doc.title}</td>
+                      <td className="py-3 px-4 uppercase text-[10px] font-bold tracking-wider">
+                        {doc.documentType}
+                      </td>
+                      <td className="py-3 px-4">{doc.customer?.name || 'Walk-in'}</td>
+                      <td className="py-3 px-4 text-[var(--muted-foreground)]">{formatDate(doc.issueDate)}</td>
+                      <td className="py-3 px-4 text-right font-semibold">
+                        {doc.totalMinor > 0 ? formatCurrency(doc.totalMinor, doc.currency) : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <Badge status={doc.status} />
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setPreviewDocId(doc.id);
+                              setPreviewDocNumber(doc.documentNumber);
+                            }}
+                            title="Preview PDF"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => api.downloadDocument(doc.id, `${doc.documentNumber}.pdf`)}
+                            title="Download PDF"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSelectedMetaDoc(doc)}
+                            title="View Metadata"
+                          >
+                            <Info className="w-3.5 h-3.5" />
+                          </Button>
+
+                          {doc.status === 'draft' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteDraft(doc.id)}
+                              title="Delete Draft"
+                              className="text-red-500 hover:text-red-600"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {data && data.totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--border)] bg-[var(--surface-secondary)] text-xs">
+              <span className="text-[var(--muted-foreground)]">
+                Page {data.page} of {data.totalPages} ({data.total} total)
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={data.page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={data.page >= data.totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* PDF Preview Modal */}
+      <PDFViewerModal
+        isOpen={Boolean(previewDocId)}
+        onClose={() => setPreviewDocId(null)}
+        documentId={previewDocId}
+        documentNumber={previewDocNumber}
+        onFinalized={() => refetch()}
+      />
+
+      {/* Metadata Inspector Modal */}
+      {selectedMetaDoc && (
+        <Modal
+          isOpen={Boolean(selectedMetaDoc)}
+          onClose={() => setSelectedMetaDoc(null)}
+          title={`Document Metadata: ${selectedMetaDoc.documentNumber}`}
+          description="Verified cryptographic checksum and storage attributes"
+          maxWidth="md"
+        >
+          <div className="space-y-3 text-xs">
+            <div className="p-3 bg-[var(--surface-secondary)] rounded-md border border-[var(--border)] space-y-2">
+              <div>
+                <span className="text-[var(--muted-foreground)] block">Storage Key:</span>
+                <span className="font-mono text-[11px] break-all">{selectedMetaDoc.storageKey || 'Generated on demand'}</span>
+              </div>
+              <div>
+                <span className="text-[var(--muted-foreground)] block">SHA-256 Checksum:</span>
+                <span className="font-mono text-[11px] break-all">{selectedMetaDoc.sha256 || 'Calculated on finalization'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">MIME Type:</span>
+                <span className="font-semibold">{selectedMetaDoc.mimeType || 'application/pdf'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">File Size:</span>
+                <span className="font-semibold">
+                  {selectedMetaDoc.fileSize > 0 ? `${(selectedMetaDoc.fileSize / 1024).toFixed(1)} KB` : 'Pending'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted-foreground)]">Created At:</span>
+                <span>{selectedMetaDoc.createdAt}</span>
+              </div>
+              {selectedMetaDoc.finalizedAt && (
+                <div className="flex justify-between">
+                  <span className="text-[var(--muted-foreground)]">Finalized At:</span>
+                  <span>{selectedMetaDoc.finalizedAt}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
