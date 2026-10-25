@@ -112,17 +112,25 @@ class ApiClient {
       headers.set('X-Workspace-ID', wsId);
     }
 
-    let response = await fetch(url, { ...options, headers });
+    const fetchOptions: RequestInit = {
+      ...options,
+      headers,
+      credentials: options.credentials || 'include',
+    };
+
+    let response = await fetch(url, fetchOptions);
 
     // Handle 401 Unauthorized by attempting a token refresh
-    if (response.status === 401 && this.refreshToken && !endpoint.includes('/auth/')) {
+    if (response.status === 401 && !endpoint.includes('/auth/')) {
       const refreshed = await this.tryRefreshToken();
       if (refreshed) {
-        headers.set('Authorization', `Bearer ${this.accessToken}`);
-        response = await fetch(url, { ...options, headers });
+        if (this.accessToken) {
+          headers.set('Authorization', `Bearer ${this.accessToken}`);
+        }
+        response = await fetch(url, { ...fetchOptions, headers });
       } else {
         this.clearTokens();
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
           window.location.href = '/login';
         }
       }
@@ -160,17 +168,25 @@ class ApiClient {
       headers.set('X-Workspace-ID', wsId);
     }
 
-    let response = await fetch(url, { ...options, headers });
+    const fetchOptions: RequestInit = {
+      ...options,
+      headers,
+      credentials: options.credentials || 'include',
+    };
+
+    let response = await fetch(url, fetchOptions);
 
     // Handle 401 Unauthorized by attempting a token refresh
-    if (response.status === 401 && this.refreshToken && !endpoint.includes('/auth/')) {
+    if (response.status === 401 && !endpoint.includes('/auth/')) {
       const refreshed = await this.tryRefreshToken();
       if (refreshed) {
-        headers.set('Authorization', `Bearer ${this.accessToken}`);
-        response = await fetch(url, { ...options, headers });
+        if (this.accessToken) {
+          headers.set('Authorization', `Bearer ${this.accessToken}`);
+        }
+        response = await fetch(url, { ...fetchOptions, headers });
       } else {
         this.clearTokens();
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
           window.location.href = '/login';
         }
       }
@@ -200,11 +216,14 @@ class ApiClient {
       const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: this.refreshToken }),
+        credentials: 'include',
+        body: JSON.stringify({ refreshToken: this.refreshToken || '' }),
       });
       if (!res.ok) return false;
       const data: AuthResponse = await res.json();
-      this.setTokens(data.accessToken, data.refreshToken);
+      if (data.accessToken) {
+        this.setTokens(data.accessToken, data.refreshToken);
+      }
       return true;
     } catch {
       return false;
@@ -237,15 +256,13 @@ class ApiClient {
   }
 
   async logout(): Promise<void> {
-    if (this.refreshToken) {
-      try {
-        await this.request('/auth/logout', {
-          method: 'POST',
-          body: JSON.stringify({ refreshToken: this.refreshToken }),
-        });
-      } catch {
-        // Ignore network error on logout
-      }
+    try {
+      await this.request('/auth/logout', {
+        method: 'POST',
+        body: JSON.stringify({ refreshToken: this.refreshToken || '' }),
+      });
+    } catch {
+      // Ignore network error on logout
     }
     this.clearTokens();
   }
@@ -278,7 +295,8 @@ class ApiClient {
   }
 
   async getRecentDocuments(limit = 10): Promise<Document[]> {
-    return this.request<Document[]>(`/dashboard/recent-documents?limit=${limit}`);
+    const res = await this.request<Document[]>(`/dashboard/recent-documents?limit=${limit}`);
+    return Array.isArray(res) ? res : [];
   }
 
   // Receipts Endpoints
@@ -616,10 +634,13 @@ class ApiClient {
     if (params?.offset) q.append('offset', params.offset.toString());
     const qs = q.toString() ? `?${q.toString()}` : '';
 
+    let res: WorkflowExecution[];
     if (id) {
-      return this.request<WorkflowExecution[]>(`/workflows/${id}/executions${qs}`);
+      res = await this.request<WorkflowExecution[]>(`/workflows/${id}/executions${qs}`);
+    } else {
+      res = await this.request<WorkflowExecution[]>(`/workflows/executions${qs}`);
     }
-    return this.request<WorkflowExecution[]>(`/workflows/executions${qs}`);
+    return Array.isArray(res) ? res : [];
   }
 
   async getWorkflowExecution(executionId: string): Promise<WorkflowExecution> {
@@ -765,7 +786,8 @@ class ApiClient {
 
   // PDF Processing Jobs
   async listPdfJobs(): Promise<any[]> {
-    return this.request<any[]>('/pdf-tools/jobs');
+    const res = await this.request<any[]>('/pdf-tools/jobs');
+    return Array.isArray(res) ? res : [];
   }
 
   // SaaS Billing & Quotas

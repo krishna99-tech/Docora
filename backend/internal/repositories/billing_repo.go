@@ -82,7 +82,7 @@ func (r *BillingRepository) GetBillingStatus(ctx context.Context, workspaceID uu
 	// Storage used in bytes -> convert to MB
 	var totalBytes *int64
 	_ = r.db.Pool.QueryRow(ctx, `
-		SELECT COALESCE(SUM(file_size), 0)
+		SELECT COALESCE(SUM(file_size), 0)::bigint
 		FROM documents
 		WHERE workspace_id = $1
 	`, workspaceID).Scan(&totalBytes)

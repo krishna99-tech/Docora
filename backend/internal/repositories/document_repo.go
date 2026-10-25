@@ -501,8 +501,8 @@ func (r *DocumentRepository) GetDashboardStats(ctx context.Context, userID uuid.
 			COUNT(*) FILTER (WHERE document_type = 'invoice'),
 			COUNT(*) FILTER (WHERE document_type = 'general'),
 			COUNT(*) FILTER (WHERE created_at >= date_trunc('month', CURRENT_DATE)),
-			COALESCE(SUM(amount_paid_minor) FILTER (WHERE document_type = 'receipt'), 0),
-			COALESCE(SUM(balance_minor) FILTER (WHERE document_type = 'invoice' AND status NOT IN ('draft', 'cancelled', 'paid')), 0)
+			COALESCE(SUM(amount_paid_minor) FILTER (WHERE document_type = 'receipt'), 0)::bigint,
+			COALESCE(SUM(balance_minor) FILTER (WHERE document_type = 'invoice' AND status NOT IN ('draft', 'cancelled', 'paid')), 0)::bigint
 		FROM documents
 		WHERE user_id = $1
 	`

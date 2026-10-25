@@ -87,7 +87,7 @@ func (r *SharingRepository) ListByWorkspace(ctx context.Context, workspaceID uui
 	}
 	defer rows.Close()
 
-	var links []models.SharingLink
+	links := make([]models.SharingLink, 0)
 	for rows.Next() {
 		var l models.SharingLink
 		var pwdHash *string

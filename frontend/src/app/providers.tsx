@@ -112,11 +112,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // Check current session
   useEffect(() => {
     const initAuth = async () => {
-      const token = api.getAccessToken();
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
       try {
         const currentUser = await api.me();
         setUser(currentUser);

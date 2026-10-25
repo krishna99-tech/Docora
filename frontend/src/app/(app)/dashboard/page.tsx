@@ -64,6 +64,9 @@ export default function DashboardPage() {
     queryFn: () => api.listPdfJobs(),
   });
 
+  const docsList = Array.isArray(recentDocs) ? recentDocs : [];
+  const execsList = Array.isArray(recentExecutions) ? recentExecutions : [];
+
   const handleOpenPreview = (id: string, num: string, status: string) => {
     setPreviewDocId(id);
     setPreviewDocNumber(num);
@@ -221,14 +224,14 @@ export default function DashboardPage() {
                           Loading documents...
                         </td>
                       </tr>
-                    ) : !recentDocs || recentDocs.length === 0 ? (
+                    ) : docsList.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="py-8 text-center text-xs text-[var(--muted-foreground)]">
                           No documents created yet. Issue your first receipt or invoice.
                         </td>
                       </tr>
                     ) : (
-                      recentDocs
+                      docsList
                         .slice((recentPage - 1) * recentPerPage, recentPage * recentPerPage)
                         .map((doc) => (
                           <tr key={doc.id} className="hover:bg-[var(--surface-hover)] transition-colors">
@@ -275,11 +278,11 @@ export default function DashboardPage() {
                 </table>
               </div>
 
-              {recentDocs && recentDocs.length > recentPerPage && (
+              {docsList.length > recentPerPage && (
                 <TablePagination
                   page={recentPage}
-                  totalPages={Math.ceil(recentDocs.length / recentPerPage)}
-                  totalItems={recentDocs.length}
+                  totalPages={Math.ceil(docsList.length / recentPerPage)}
+                  totalItems={docsList.length}
                   pageSize={recentPerPage}
                   onPageChange={setRecentPage}
                   itemName="documents"
@@ -291,10 +294,10 @@ export default function DashboardPage() {
             <div className="sm:hidden space-y-2.5">
               {docsLoading ? (
                 <Card className="p-6 text-center text-xs text-[var(--muted-foreground)]">Loading documents...</Card>
-              ) : !recentDocs || recentDocs.length === 0 ? (
+              ) : docsList.length === 0 ? (
                 <Card className="p-8 text-center text-xs text-[var(--muted-foreground)]">No documents yet.</Card>
               ) : (
-                recentDocs
+                docsList
                   .slice((recentPage - 1) * recentPerPage, recentPage * recentPerPage)
                   .map((doc) => (
                     <Card key={doc.id} className="p-3.5 space-y-2 border border-[var(--border)]">
@@ -354,7 +357,7 @@ export default function DashboardPage() {
                 <div className="text-center py-8 text-xs text-[var(--muted-foreground)]">
                   Loading workflow runs...
                 </div>
-              ) : recentExecutions.length === 0 ? (
+              ) : execsList.length === 0 ? (
                 <div className="text-center py-8 space-y-2">
                   <Workflow className="w-6 h-6 text-[var(--muted-foreground)] mx-auto" />
                   <p className="text-xs text-[var(--muted-foreground)]">No executions recorded yet.</p>
@@ -366,7 +369,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  {recentExecutions.slice(0, 5).map((exec: WorkflowExecution) => {
+                  {execsList.slice(0, 5).map((exec: WorkflowExecution) => {
                     const isSuccess = exec.status === 'completed';
                     const isFailed = exec.status === 'failed';
                     return (

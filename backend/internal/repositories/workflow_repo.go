@@ -156,7 +156,7 @@ func (r *WorkflowRepository) ListWorkflows(ctx context.Context, workspaceID uuid
 	}
 	defer rows.Close()
 
-	var list []models.Workflow
+	list := make([]models.Workflow, 0)
 	for rows.Next() {
 		var wf models.Workflow
 		if err := rows.Scan(
@@ -415,7 +415,7 @@ func (r *WorkflowRepository) ListExecutions(ctx context.Context, workspaceID uui
 	}
 	defer rows.Close()
 
-	var list []models.WorkflowExecution
+	list := make([]models.WorkflowExecution, 0)
 	for rows.Next() {
 		var ex models.WorkflowExecution
 		if err := rows.Scan(

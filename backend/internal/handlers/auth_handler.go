@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"docora/backend/internal/middleware"
@@ -23,6 +24,24 @@ func NewAuthHandler(authService *services.AuthService, userRepo *repositories.Us
 	}
 }
 
+func (h *AuthHandler) setAuthCookies(c *gin.Context, accessToken, refreshToken string) {
+	isSecure := c.Request.TLS != nil || strings.EqualFold(c.GetHeader("X-Forwarded-Proto"), "https")
+	c.SetSameSite(http.SameSiteLaxMode)
+	// access_token: 15 minutes (900 seconds), HttpOnly, Path: /
+	c.SetCookie("access_token", accessToken, 900, "/", "", isSecure, true)
+	if refreshToken != "" {
+		// refresh_token: 7 days (604800 seconds), HttpOnly, Path: /
+		c.SetCookie("refresh_token", refreshToken, 604800, "/", "", isSecure, true)
+	}
+}
+
+func (h *AuthHandler) clearAuthCookies(c *gin.Context) {
+	isSecure := c.Request.TLS != nil || strings.EqualFold(c.GetHeader("X-Forwarded-Proto"), "https")
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("access_token", "", -1, "/", "", isSecure, true)
+	c.SetCookie("refresh_token", "", -1, "/", "", isSecure, true)
+}
+
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req models.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -40,6 +59,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
+	h.setAuthCookies(c, resp.AccessToken, resp.RefreshToken)
 	c.JSON(http.StatusCreated, resp)
 }
 
@@ -56,22 +76,34 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	h.setAuthCookies(c, resp.AccessToken, resp.RefreshToken)
 	c.JSON(http.StatusOK, resp)
 }
 
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req models.RefreshTokenRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	_ = c.ShouldBindJSON(&req)
+
+	token := req.RefreshToken
+	if token == "" {
+		if cookie, err := c.Cookie("refresh_token"); err == nil && cookie != "" {
+			token = cookie
+		}
+	}
+
+	if token == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Refresh token is required"})
 		return
 	}
 
-	resp, err := h.authService.RefreshToken(c.Request.Context(), req.RefreshToken)
+	resp, err := h.authService.RefreshToken(c.Request.Context(), token)
 	if err != nil {
+		h.clearAuthCookies(c)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired refresh token"})
 		return
 	}
 
+	h.setAuthCookies(c, resp.AccessToken, resp.RefreshToken)
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -79,7 +111,17 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	var req models.RefreshTokenRequest
 	_ = c.ShouldBindJSON(&req)
 
-	_ = h.authService.Logout(c.Request.Context(), req.RefreshToken)
+	token := req.RefreshToken
+	if token == "" {
+		if cookie, err := c.Cookie("refresh_token"); err == nil {
+			token = cookie
+		}
+	}
+
+	if token != "" {
+		_ = h.authService.Logout(c.Request.Context(), token)
+	}
+	h.clearAuthCookies(c)
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 

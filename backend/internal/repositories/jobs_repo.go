@@ -109,7 +109,7 @@ func (r *JobRepository) ListByWorkspace(ctx context.Context, workspaceID uuid.UU
 	}
 	defer rows.Close()
 
-	var jobs []models.ProcessingJob
+	jobs := make([]models.ProcessingJob, 0)
 	for rows.Next() {
 		var j models.ProcessingJob
 		var inputKeysRaw []byte
