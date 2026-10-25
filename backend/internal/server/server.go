@@ -64,6 +64,8 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 	versionRepo := repositories.NewVersionRepository(db)
 	devRepo := repositories.NewDeveloperRepository(db)
 	workflowRepo := repositories.NewWorkflowRepository(db)
+	billingRepo := repositories.NewBillingRepository(db)
+	folderRepo := repositories.NewFolderRepository(db)
 
 	// PDF processor & verifier
 	pdfProcessor := pdfutils.NewProcessor()
@@ -82,6 +84,8 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 	pdfToolsService := services.NewPDFToolsService(pdfProcessor, fileStore, jobsRepo)
 	versionService := services.NewVersionService(versionRepo, docRepo)
 	devService := services.NewDeveloperService(devRepo)
+	billingService := services.NewBillingService(billingRepo)
+	folderService := services.NewFolderService(folderRepo)
 	workflowService := services.NewWorkflowService(workflowRepo, docRepo, docService, fileStore, pdfProcessor)
 	workflowService.StartScheduler(context.Background())
 	_ = workflowService.RecoverOrphanedExecutions(context.Background())
@@ -105,6 +109,8 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 	versionHandler := handlers.NewVersionHandler(versionService)
 	developerHandler := handlers.NewDeveloperHandler(devService)
 	workflowHandler := handlers.NewWorkflowHandler(workflowService)
+	billingHandler := handlers.NewBillingHandler(billingService)
+	folderHandler := handlers.NewFolderHandler(folderService)
 
 	// Rate limiter (e.g. 60 req/min for auth)
 	rateLimiter := middleware.NewRateLimiter(60, time.Minute)
@@ -281,6 +287,22 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			// Business Profile
 			protected.GET("/business-profile", businessHandler.GetProfile)
 			protected.PUT("/business-profile", businessHandler.UpdateProfile)
+
+			// SaaS Billing, Plans, and Quotas
+			protected.GET("/billing/status", billingHandler.GetStatus)
+			protected.GET("/billing/plans", billingHandler.GetPlans)
+			protected.POST("/billing/change-plan", billingHandler.ChangePlan)
+			protected.GET("/billing/invoices", billingHandler.ListInvoices)
+
+			// Enterprise Document Folders, Tags & Compliance
+			protected.GET("/folders", folderHandler.List)
+			protected.POST("/folders", folderHandler.Create)
+			protected.PUT("/folders/:id", folderHandler.Update)
+			protected.DELETE("/folders/:id", folderHandler.Delete)
+			protected.POST("/folders/move", folderHandler.Move)
+			protected.POST("/folders/tag", folderHandler.Tag)
+			protected.POST("/folders/archive", folderHandler.Archive)
+			protected.POST("/folders/compliance", folderHandler.Compliance)
 		}
 	}
 

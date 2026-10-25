@@ -26,6 +26,10 @@ import {
   WebhookDelivery,
   Workspace,
   WorkspaceMember,
+  WorkspaceBillingStatus,
+  PlanDefinition,
+  WorkspaceInvoice,
+  DocumentFolder,
 } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
@@ -762,6 +766,79 @@ class ApiClient {
   // PDF Processing Jobs
   async listPdfJobs(): Promise<any[]> {
     return this.request<any[]>('/pdf-tools/jobs');
+  }
+
+  // SaaS Billing & Quotas
+  async getBillingStatus(): Promise<WorkspaceBillingStatus> {
+    return this.request<WorkspaceBillingStatus>('/billing/status');
+  }
+
+  async getBillingPlans(): Promise<PlanDefinition[]> {
+    return this.request<PlanDefinition[]>('/billing/plans');
+  }
+
+  async changePlan(plan: string, billingCycle: string): Promise<WorkspaceBillingStatus> {
+    return this.request<WorkspaceBillingStatus>('/billing/change-plan', {
+      method: 'POST',
+      body: JSON.stringify({ plan, billingCycle }),
+    });
+  }
+
+  async getBillingInvoices(): Promise<WorkspaceInvoice[]> {
+    return this.request<WorkspaceInvoice[]>('/billing/invoices');
+  }
+
+  // Enterprise Folders & Documents Management
+  async listFolders(): Promise<DocumentFolder[]> {
+    return this.request<DocumentFolder[]>('/folders');
+  }
+
+  async createFolder(data: { name: string; color?: string; parentId?: string }): Promise<DocumentFolder> {
+    return this.request<DocumentFolder>('/folders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateFolder(id: string, data: { name?: string; color?: string; parentId?: string }): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/folders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteFolder(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/folders/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async moveDocuments(documentIds: string[], folderId: string | null): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/folders/move', {
+      method: 'POST',
+      body: JSON.stringify({ documentIds, folderId }),
+    });
+  }
+
+  async tagDocuments(documentIds: string[], tags: string[]): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/folders/tag', {
+      method: 'POST',
+      body: JSON.stringify({ documentIds, tags }),
+    });
+  }
+
+  async archiveDocuments(documentIds: string[], archive: boolean): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/folders/archive', {
+      method: 'POST',
+      body: JSON.stringify({ documentIds, archive }),
+    });
+  }
+
+  async applyCompliance(complianceStandard: string, retentionDays: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/folders/compliance', {
+      method: 'POST',
+      body: JSON.stringify({ complianceStandard, retentionDays }),
+    });
   }
 }
 

@@ -107,6 +107,12 @@ export default function WorkspaceSettingsPage() {
           >
             Security & Password
           </Link>
+          <Link
+            href="/settings/billing"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            Plans & Billing
+          </Link>
         </div>
 
         {feedbackMsg && (

@@ -453,3 +453,58 @@ export interface WorkspaceMember {
   createdAt: string;
 }
 
+export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
+
+export interface PlanDefinition {
+  id: PlanTier;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  priceAnnual: number;
+  quotaDocuments: number;
+  quotaStorageMb: number;
+  quotaMembers: number;
+  quotaWorkflows: number;
+  features: string[];
+}
+
+export interface WorkspaceBillingStatus {
+  workspaceId: string;
+  plan: PlanTier;
+  billingCycle: string;
+  subscriptionStatus: string;
+  currentPeriodEnd: string;
+  quotaDocumentsMonthly: number;
+  documentsUsedThisMonth: number;
+  quotaStorageMb: number;
+  storageUsedMb: number;
+  quotaMembers: number;
+  membersCount: number;
+  quotaWorkflows: number;
+  workflowsCount: number;
+  canGenerateMoreDocs: boolean;
+}
+
+export interface WorkspaceInvoice {
+  id: string;
+  workspaceId: string;
+  invoiceNumber: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paidAt: string;
+  hostedInvoiceUrl?: string;
+  createdAt: string;
+}
+
+export interface DocumentFolder {
+  id: string;
+  workspaceId: string;
+  parentId?: string;
+  name: string;
+  color: string;
+  documentCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+

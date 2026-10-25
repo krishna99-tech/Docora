@@ -106,6 +106,12 @@ export default function SettingsPage() {
           >
             Security & Password
           </Link>
+          <Link
+            href="/settings/billing"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            Plans & Billing
+          </Link>
         </div>
         {savedSuccess && (
           <div className="p-4 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-lg flex items-center gap-2">

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Eye, Download, Trash2, FolderArchive, Info } from 'lucide-react';
+import { Search, Eye, Download, Trash2, FolderArchive, Info, Folder, FolderPlus, Tag, ShieldCheck, Plus, Check } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/modal';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { PDFViewerModal } from '@/components/pdf/pdf-viewer-modal';
 import { TablePagination } from '@/components/ui/table-pagination';
-import { Document } from '@/types';
+import { Document, DocumentFolder } from '@/types';
 
 export default function DocumentLibraryPage() {
   const [search, setSearch] = useState('');
@@ -25,6 +25,28 @@ export default function DocumentLibraryPage() {
   const [previewDocId, setPreviewDocId] = useState<string | null>(null);
   const [previewDocNumber, setPreviewDocNumber] = useState<string>('');
   const [selectedMetaDoc, setSelectedMetaDoc] = useState<Document | null>(null);
+
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+
+  const { data: folders = [], refetch: refetchFolders } = useQuery({
+    queryKey: ['document-folders'],
+    queryFn: () => api.listFolders(),
+  });
+
+  const handleCreateFolder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFolderName.trim()) return;
+    try {
+      await api.createFolder({ name: newFolderName.trim() });
+      setNewFolderName('');
+      setShowFolderModal(false);
+      refetchFolders();
+    } catch (err: any) {
+      alert(`Error creating folder: ${err.message}`);
+    }
+  };
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['documents-library', search, typeFilter, statusFilter, page, sortBy, sortOrder],
@@ -67,6 +89,79 @@ export default function DocumentLibraryPage() {
       />
 
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
+        {/* Enterprise Folder Navigation Bar */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+          <button
+            onClick={() => setSelectedFolderId(null)}
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold transition-all whitespace-nowrap ${
+              selectedFolderId === null
+                ? 'bg-neutral-800 text-white'
+                : 'bg-[var(--surface)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)]'
+            }`}
+          >
+            <FolderArchive className="w-3.5 h-3.5" />
+            <span>All Documents</span>
+            <span className="text-[10px] opacity-70 ml-1">({data?.total || 0})</span>
+          </button>
+
+          {folders.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setSelectedFolderId(f.id)}
+              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold transition-all whitespace-nowrap ${
+                selectedFolderId === f.id
+                  ? 'bg-neutral-800 text-white'
+                  : 'bg-[var(--surface)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)]'
+              }`}
+            >
+              <Folder className="w-3.5 h-3.5 text-neutral-400" />
+              <span>{f.name}</span>
+              <span className="text-[10px] opacity-70 ml-0.5">({f.documentCount})</span>
+            </button>
+          ))}
+
+          <button
+            onClick={() => setShowFolderModal(true)}
+            className="px-2.5 py-1.5 rounded-lg border border-dashed border-[var(--border)] hover:border-neutral-500 text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1 whitespace-nowrap text-xs transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Folder</span>
+          </button>
+        </div>
+
+        {/* Create Folder Modal */}
+        {showFolderModal && (
+          <Modal
+            isOpen={showFolderModal}
+            onClose={() => setShowFolderModal(false)}
+            title="Create Enterprise Folder"
+          >
+            <form onSubmit={handleCreateFolder} className="space-y-4 pt-2">
+              <div>
+                <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1">
+                  Folder Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  placeholder="e.g. Q3 Invoices or Tax Audits"
+                  className="w-full h-9 px-3 text-xs rounded-md bg-[var(--background)] border border-[var(--input)] text-[var(--foreground)] focus:outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" type="button" onClick={() => setShowFolderModal(false)} className="text-xs">
+                  Cancel
+                </Button>
+                <Button type="submit" className="text-xs font-semibold">
+                  Create Folder
+                </Button>
+              </div>
+            </form>
+          </Modal>
+        )}
+
         {/* Search & Filters */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="relative w-full md:w-80">
