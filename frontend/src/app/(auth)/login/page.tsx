@@ -70,6 +70,12 @@ export default function LoginPage() {
             <label className="text-xs font-semibold text-[var(--foreground)]">
               Password
             </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:underline"
+            >
+              Forgot password?
+            </Link>
           </div>
           <Input
             type="password"
