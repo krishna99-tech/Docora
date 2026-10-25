@@ -175,6 +175,28 @@ export default function WorkflowsDashboardPage() {
     }
   };
 
+  const handleCancelExecution = async (execId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const ok = await confirm({
+      title: 'Stop Execution',
+      message: 'Are you sure you want to stop and cancel this running workflow execution?',
+      itemName: execId,
+      itemType: 'Execution Run',
+      confirmText: 'Stop Execution',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
+    try {
+      await api.cancelWorkflowExecution(execId);
+      setFeedbackMsg({ text: `Execution ${execId} has been stopped.` });
+      fetchDashboardData();
+    } catch (err: any) {
+      setFeedbackMsg({ text: `Cancel failed: ${err.message}`, error: true });
+    }
+  };
+
   const handleExport = async (wfId: string) => {
     try {
       const data = await api.exportWorkflow(wfId);
@@ -611,6 +633,24 @@ export default function WorkflowsDashboardPage() {
                           <Download className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
                         </button>
 
+                        {/* Duplicate */}
+                        <button
+                          onClick={() => handleDuplicate(wf.id)}
+                          title="Duplicate Workflow"
+                          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
+                        >
+                          <Copy className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
+                        </button>
+
+                        {/* Delete */}
+                        <button
+                          onClick={() => handleDelete(wf.id, wf.name)}
+                          title="Delete Workflow"
+                          className="p-1.5 rounded-lg border border-red-900/40 bg-red-950/20 text-red-400 hover:bg-red-900/40 hover:text-red-300 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        </button>
+
                         {/* Edit Builder */}
                         <Link href={`/workflows/${wf.id}/edit`}>
                           <Button variant="outline" size="sm" className="text-xs h-7 px-2 font-semibold">
@@ -763,6 +803,16 @@ export default function WorkflowsDashboardPage() {
                       >
                         {ex.status}
                       </span>
+                      {(ex.status === 'running' || ex.status === 'waiting_approval') && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => handleCancelExecution(ex.id, e)}
+                          className="h-6 px-2 text-[10px] font-semibold border-red-900/40 text-red-400 hover:bg-red-950/30"
+                        >
+                          Stop Run
+                        </Button>
+                      )}
                       <ChevronRight className="w-4 h-4 text-neutral-500" />
                     </div>
                   </Link>

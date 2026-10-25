@@ -15,8 +15,10 @@ import {
   Clock,
   Calendar,
   Layers,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Header } from '@/components/layout/header';
 import { WorkflowCanvas } from '@/components/workflow/workflow-canvas';
 import { WorkflowStepList } from '@/components/workflow/workflow-step-list';
@@ -31,6 +33,7 @@ import { api } from '@/lib/api';
 export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const confirm = useConfirm();
 
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
@@ -47,6 +50,7 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'canvas' | 'list'>('canvas');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -171,6 +175,26 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
     }
   };
 
+  const handleDeleteWorkflow = async () => {
+    const ok = await confirm({
+      title: 'Delete Workflow',
+      message: 'Are you sure you want to delete this workflow permanently? All version history and scheduled triggers will be removed.',
+      itemName: name,
+      itemType: 'Workflow Pipeline',
+      confirmText: 'Delete Workflow',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await api.deleteWorkflow(id);
+      router.push('/workflows');
+    } catch (err: any) {
+      setErrorMsg(`Failed to delete workflow: ${err.message}`);
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-4rem)] text-xs text-[var(--muted-foreground)]">
@@ -245,6 +269,18 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
             className="text-xs h-8 font-semibold hidden sm:inline-flex"
           >
             <Activity className="w-3.5 h-3.5 mr-1" /> Test Run
+          </Button>
+
+          {/* Delete Workflow */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDeleteWorkflow}
+            disabled={deleting}
+            className="text-xs h-8 font-semibold border-red-900/40 text-red-400 hover:bg-red-950/20 hover:text-red-300"
+          >
+            <Trash2 className="w-3.5 h-3.5 mr-1" />
+            {deleting ? 'Deleting...' : 'Delete'}
           </Button>
 
           {/* Save Changes */}

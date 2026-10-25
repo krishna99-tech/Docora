@@ -112,6 +112,28 @@ export default function WorkflowDetailPage({
     }
   };
 
+  const handleCancelExecution = async (execId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const ok = await confirm({
+      title: 'Stop Execution',
+      message: 'Are you sure you want to stop and cancel this running workflow execution?',
+      itemName: execId,
+      itemType: 'Execution Run',
+      confirmText: 'Stop Execution',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
+    try {
+      await api.cancelWorkflowExecution(execId);
+      setFeedbackMsg(`Execution ${execId} has been stopped.`);
+      loadData();
+    } catch (err: any) {
+      alert(`Cancel failed: ${err.message}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-12 text-center text-xs text-[var(--muted-foreground)]">
@@ -283,7 +305,7 @@ export default function WorkflowDetailPage({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     <span className="font-mono text-neutral-400 text-[11px]">{ex.durationMs}ms</span>
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
@@ -296,6 +318,16 @@ export default function WorkflowDetailPage({
                     >
                       {ex.status}
                     </span>
+                    {(ex.status === 'running' || ex.status === 'waiting_approval') && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => handleCancelExecution(ex.id, e)}
+                        className="h-6 px-2 text-[10px] font-semibold border-red-900/40 text-red-400 hover:bg-red-950/30"
+                      >
+                        Stop Run
+                      </Button>
+                    )}
                     <ChevronRight className="w-4 h-4 text-neutral-500" />
                   </div>
                 </Link>
