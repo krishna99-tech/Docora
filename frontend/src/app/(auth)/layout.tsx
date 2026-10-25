@@ -18,10 +18,16 @@ import {
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isRegister = pathname?.includes('/register');
-  const isForgotPassword = pathname?.includes('/forgot-password');
-  const isVerifyOtp = pathname?.includes('/verify-otp');
-  const isResetPassword = pathname?.includes('/reset-password');
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isRegister = mounted && pathname?.includes('/register');
+  const isForgotPassword = mounted && pathname?.includes('/forgot-password');
+  const isVerifyOtp = mounted && pathname?.includes('/verify-otp');
+  const isResetPassword = mounted && pathname?.includes('/reset-password');
 
   // Dynamic content tailored for each auth route
   let showcaseContent = {
@@ -163,7 +169,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Showcase Core Feature Highlights */}
-        <div className="relative z-10 my-auto max-w-lg space-y-8 transition-all duration-300">
+        <div suppressHydrationWarning className="relative z-10 my-auto max-w-lg space-y-8 transition-all duration-300">
           <div>
             <div className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-300 mb-4">
               <BadgeIcon className="w-3.5 h-3.5 text-neutral-200" />
