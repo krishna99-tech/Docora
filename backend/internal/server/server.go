@@ -82,7 +82,9 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 	pdfToolsService := services.NewPDFToolsService(pdfProcessor, fileStore, jobsRepo)
 	versionService := services.NewVersionService(versionRepo, docRepo)
 	devService := services.NewDeveloperService(devRepo)
-	workflowService := services.NewWorkflowService(workflowRepo, docRepo)
+	workflowService := services.NewWorkflowService(workflowRepo, docRepo, docService, fileStore, pdfProcessor)
+	workflowService.StartScheduler(context.Background())
+	_ = workflowService.RecoverOrphanedExecutions(context.Background())
 
 	// Handlers
 	authHandler := handlers.NewAuthHandler(authService, userRepo)
@@ -133,6 +135,7 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			publicGroup.GET("/verify/:token", verificationHandler.PublicVerify)
 			publicGroup.GET("/share/:token", sharingHandler.GetPublicShareInfo)
 			publicGroup.POST("/share/:token/access", sharingHandler.AccessSharedDocument)
+			publicGroup.POST("/workflows/webhook/:token", workflowHandler.WebhookTrigger)
 		}
 
 		// Auth endpoints (with rate limiting)
@@ -144,12 +147,16 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			authGroup.POST("/refresh", authHandler.Refresh)
 			authGroup.POST("/logout", authHandler.Logout)
 			authGroup.GET("/me", middleware.Auth(authService), authHandler.Me)
+			authGroup.PUT("/profile", middleware.Auth(authService), authHandler.UpdateProfile)
+			authGroup.POST("/change-password", middleware.Auth(authService), authHandler.ChangePassword)
 		}
 
 		// Protected endpoints
 		protected := v1.Group("")
 		protected.Use(middleware.Auth(authService))
 		{
+			// User Profile alias
+			protected.PUT("/users/me", authHandler.UpdateProfile)
 			// Dashboard
 			protected.GET("/dashboard/stats", dashboardHandler.GetStats)
 			protected.GET("/dashboard/recent-documents", dashboardHandler.GetRecentDocuments)
@@ -166,6 +173,7 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			protected.POST("/receipts", receiptHandler.Create)
 			protected.GET("/receipts", receiptHandler.List)
 			protected.GET("/receipts/:id", receiptHandler.GetByID)
+			protected.PUT("/receipts/:id", receiptHandler.Update)
 			protected.POST("/receipts/:id/preview", receiptHandler.Preview)
 			protected.POST("/receipts/:id/finalize", receiptHandler.Finalize)
 			protected.POST("/receipts/:id/cancel", receiptHandler.Cancel)
@@ -174,6 +182,7 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			protected.POST("/invoices", invoiceHandler.Create)
 			protected.GET("/invoices", invoiceHandler.List)
 			protected.GET("/invoices/:id", invoiceHandler.GetByID)
+			protected.PUT("/invoices/:id", invoiceHandler.Update)
 			protected.POST("/invoices/:id/preview", invoiceHandler.Preview)
 			protected.POST("/invoices/:id/finalize", invoiceHandler.Finalize)
 			protected.POST("/invoices/:id/cancel", invoiceHandler.Cancel)
@@ -217,15 +226,34 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			protected.POST("/developer/webhooks", developerHandler.CreateWebhook)
 			protected.DELETE("/developer/webhooks/:id", developerHandler.DeleteWebhook)
 			protected.GET("/developer/webhooks/:id/deliveries", developerHandler.ListDeliveries)
+			protected.POST("/developer/webhooks/:id/test", developerHandler.TestWebhook)
 
 			// Workflow Automation
 			protected.GET("/workflows", workflowHandler.List)
 			protected.POST("/workflows", workflowHandler.Create)
-			protected.GET("/workflows/:id", workflowHandler.Get)
-			protected.POST("/workflows/:id/trigger", workflowHandler.Trigger)
-			protected.GET("/workflows/executions/:id", workflowHandler.GetExecution)
+			protected.GET("/workflows/templates", workflowHandler.GetTemplates)
+			protected.GET("/workflows/analytics", workflowHandler.GetAnalytics)
 			protected.GET("/workflows/approvals", workflowHandler.ListApprovals)
 			protected.POST("/workflows/approvals/:id/decide", workflowHandler.DecideApproval)
+			protected.GET("/workflows/executions", workflowHandler.ListExecutions)
+			protected.GET("/workflows/executions/:id", workflowHandler.GetExecution)
+			protected.POST("/workflows/executions/:id/retry", workflowHandler.RetryExecution)
+			protected.POST("/workflows/executions/:id/cancel", workflowHandler.CancelExecution)
+			protected.POST("/workflows/test", workflowHandler.DryRun)
+			protected.POST("/workflows/import", workflowHandler.Import)
+			protected.GET("/workflows/:id", workflowHandler.Get)
+			protected.PUT("/workflows/:id", workflowHandler.Update)
+			protected.DELETE("/workflows/:id", workflowHandler.Delete)
+			protected.POST("/workflows/:id/duplicate", workflowHandler.Duplicate)
+			protected.POST("/workflows/:id/trigger", workflowHandler.Trigger)
+			protected.POST("/workflows/:id/test", workflowHandler.DryRun)
+			protected.POST("/workflows/:id/bulk", workflowHandler.Bulk)
+			protected.GET("/workflows/:id/versions", workflowHandler.ListVersions)
+			protected.POST("/workflows/:id/versions/:version/restore", workflowHandler.RestoreVersion)
+			protected.GET("/workflows/:id/executions", workflowHandler.ListExecutions)
+			protected.GET("/workflows/:id/schedule", workflowHandler.GetSchedule)
+			protected.POST("/workflows/:id/schedule", workflowHandler.SaveSchedule)
+			protected.GET("/workflows/:id/export", workflowHandler.Export)
 
 			// Unified Document Library & General PDF
 			protected.GET("/documents", documentHandler.List)

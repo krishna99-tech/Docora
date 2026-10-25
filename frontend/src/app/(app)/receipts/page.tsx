@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { PDFViewerModal } from '@/components/pdf/pdf-viewer-modal';
+import { TablePagination } from '@/components/ui/table-pagination';
 
 export default function ReceiptsPage() {
   const [search, setSearch] = useState('');
@@ -208,30 +209,15 @@ export default function ReceiptsPage() {
           </div>
 
           {/* Pagination */}
-          {data && data.totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-3 border-t border-[var(--border)] bg-[var(--surface-secondary)] text-xs">
-              <span className="text-[var(--muted-foreground)]">
-                Page {data.page} of {data.totalPages} ({data.total} total)
-              </span>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={data.page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={data.page >= data.totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
+          {data && (
+            <TablePagination
+              page={data.page}
+              totalPages={data.totalPages}
+              totalItems={data.total}
+              pageSize={15}
+              onPageChange={setPage}
+              itemName="receipts"
+            />
           )}
         </Card>
 
@@ -297,28 +283,15 @@ export default function ReceiptsPage() {
             ))
           )}
 
-          {data && data.totalPages > 1 && (
-            <div className="flex items-center justify-between pt-2 text-xs">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={data.page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Previous
-              </Button>
-              <span className="text-[var(--muted-foreground)] text-xs">
-                {data.page} / {data.totalPages}
-              </span>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={data.page >= data.totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
+          {data && (
+            <TablePagination
+              page={data.page}
+              totalPages={data.totalPages}
+              totalItems={data.total}
+              pageSize={15}
+              onPageChange={setPage}
+              itemName="receipts"
+            />
           )}
         </div>
       </div>

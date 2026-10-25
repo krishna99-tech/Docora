@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { Save, Building2, Sliders, Moon, Sun, CheckCircle } from 'lucide-react';
 import { Header } from '@/components/layout/header';
@@ -79,6 +80,33 @@ export default function SettingsPage() {
       />
 
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full space-y-6">
+        {/* Navigation Tabs Bar */}
+        <div className="flex items-center gap-2 border-b border-[var(--border)] pb-3">
+          <Link
+            href="/settings/profile"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            Profile
+          </Link>
+          <Link
+            href="/settings"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs"
+          >
+            Business Workspace
+          </Link>
+          <Link
+            href="/settings/workspaces"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            Team & Members
+          </Link>
+          <Link
+            href="/settings/security"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition-colors"
+          >
+            Security & Password
+          </Link>
+        </div>
         {savedSuccess && (
           <div className="p-4 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-lg flex items-center gap-2">
             <CheckCircle className="w-4 h-4" />

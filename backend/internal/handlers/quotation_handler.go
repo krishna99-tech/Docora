@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"docora/backend/internal/middleware"
 	"docora/backend/internal/models"
 	"docora/backend/internal/services"
 )
@@ -18,12 +19,11 @@ func NewQuotationHandler(docService *services.DocumentService) *QuotationHandler
 }
 
 func (h *QuotationHandler) Create(c *gin.Context) {
-	userIDVal, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	userID := userIDVal.(uuid.UUID)
 
 	var req models.CreateQuotationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -41,12 +41,11 @@ func (h *QuotationHandler) Create(c *gin.Context) {
 }
 
 func (h *QuotationHandler) Get(c *gin.Context) {
-	userIDVal, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	userID := userIDVal.(uuid.UUID)
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {

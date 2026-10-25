@@ -102,6 +102,47 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*models.Use
 	return &user, nil
 }
 
+func (r *UserRepository) UpdateProfile(ctx context.Context, userID uuid.UUID, name string) (*models.User, error) {
+	query := `
+		UPDATE users
+		SET name = $1, updated_at = NOW()
+		WHERE id = $2
+		RETURNING id, name, email, password_hash, created_at, updated_at
+	`
+	var user models.User
+	err := r.db.Pool.QueryRow(ctx, query, name, userID).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.PasswordHash,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, newPasswordHash string) error {
+	query := `
+		UPDATE users
+		SET password_hash = $1, updated_at = NOW()
+		WHERE id = $2
+	`
+	tag, err := r.db.Pool.Exec(ctx, query, newPasswordHash, userID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
 func (r *UserRepository) StoreRefreshToken(ctx context.Context, token *models.RefreshToken) error {
 	query := `
 		INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at)

@@ -23,6 +23,11 @@ import {
   ShieldCheck,
   Share2,
   Workflow,
+  Sparkles,
+  Layers,
+  Code2,
+  BarChart3,
+  UserCheck,
 } from 'lucide-react';
 import { useAuth, useTheme, useNavigation } from '@/app/providers';
 import { cn } from '@/lib/utils';
@@ -30,16 +35,16 @@ import { Button } from '@/components/ui/button';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Documents', href: '/documents', icon: FolderArchive },
-  { label: 'Receipts', href: '/receipts', icon: Receipt },
-  { label: 'Invoices', href: '/invoices', icon: FileSpreadsheet },
+  { label: 'Document Studio', href: '/studio', icon: Sparkles },
   { label: 'PDF Tools', href: '/pdf-tools', icon: Wrench },
   { label: 'Templates', href: '/templates', icon: Palette },
-  { label: 'Customers', href: '/customers', icon: Users },
   { label: 'Workflows', href: '/workflows', icon: Workflow },
-  { label: 'Verification', href: '/verification', icon: ShieldCheck },
-  { label: 'Shared Links', href: '/shared', icon: Share2 },
-  { label: 'Settings', href: '/settings', icon: Settings },
+  { label: 'Document Library', href: '/documents', icon: FolderArchive },
+  { label: 'Bulk Generation', href: '/bulk', icon: Layers },
+  { label: 'Developer / API', href: '/developer', icon: Code2 },
+  { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { label: 'Workspace Settings', href: '/settings', icon: Settings },
+  { label: 'User Profile', href: '/settings/profile', icon: UserCheck },
 ];
 
 export function Sidebar() {

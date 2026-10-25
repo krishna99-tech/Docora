@@ -258,11 +258,24 @@ func (r *ChromedpRenderer) generateHTML(data *RenderData) (string, error) {
 func (r *ChromedpRenderer) generateFallbackPDF(data *RenderData, html string) ([]byte, error) {
 	var b bytes.Buffer
 	b.WriteString("%PDF-1.4\n")
-	b.WriteString("%âãÏÓ\n")
+	b.WriteString("%\xe2\xe3\xcf\xd3\n")
 
+	offsets := make([]int, 6)
+
+	// Object 1: Catalog
+	offsets[1] = b.Len()
 	b.WriteString("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n")
+
+	// Object 2: Pages
+	offsets[2] = b.Len()
 	b.WriteString("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n")
+
+	// Object 3: Page
+	offsets[3] = b.Len()
 	b.WriteString("3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n")
+
+	// Object 4: Font
+	offsets[4] = b.Len()
 	b.WriteString("4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n")
 
 	title := data.Document.Title
@@ -282,10 +295,18 @@ func (r *ChromedpRenderer) generateFallbackPDF(data *RenderData, html string) ([
 		fmt.Sprintf("%.2f %s", float64(data.Document.BalanceMinor)/100.0, data.Document.Currency),
 	)
 
+	// Object 5: Content stream
+	offsets[5] = b.Len()
 	b.WriteString(fmt.Sprintf("5 0 obj\n<< /Length %d >>\nstream\n%sendstream\nendobj\n", len(contentStream), contentStream))
-	b.WriteString("xref\n0 6\n0000000000 65535 f \n0000000015 00000 n \n0000000068 00000 n \n0000000125 00000 n \n0000000240 00000 n \n0000000317 00000 n \n")
-	b.WriteString("trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n")
-	b.WriteString(fmt.Sprintf("%d\n%%%%EOF\n", len(b.Bytes())-50))
+
+	xrefOffset := b.Len()
+	b.WriteString("xref\n0 6\n")
+	b.WriteString("0000000000 65535 f \n")
+	for i := 1; i <= 5; i++ {
+		b.WriteString(fmt.Sprintf("%010d 00000 n \n", offsets[i]))
+	}
+	b.WriteString("trailer\n<< /Size 6 /Root 1 0 R >>\n")
+	b.WriteString(fmt.Sprintf("startxref\n%d\n%%%%EOF\n", xrefOffset))
 
 	return b.Bytes(), nil
 }

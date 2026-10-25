@@ -142,3 +142,26 @@ func (h *DeveloperHandler) ListDeliveries(c *gin.Context) {
 
 	c.JSON(http.StatusOK, deliveries)
 }
+
+func (h *DeveloperHandler) TestWebhook(c *gin.Context) {
+	wsID := h.getWorkspaceID(c)
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid webhook id"})
+		return
+	}
+
+	var req struct {
+		EventType string `json:"eventType"`
+	}
+	_ = c.ShouldBindJSON(&req)
+
+	delivery, err := h.devService.TestWebhook(c.Request.Context(), id, wsID, req.EventType)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, delivery)
+}
+

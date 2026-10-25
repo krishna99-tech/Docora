@@ -99,6 +99,41 @@ func (s *AuthService) Logout(ctx context.Context, rawRefreshToken string) error 
 	return s.userRepo.RevokeRefreshToken(ctx, tokenHash)
 }
 
+func (s *AuthService) UpdateProfile(ctx context.Context, userID uuid.UUID, name string) (*models.User, error) {
+	if name == "" {
+		return nil, errors.New("name cannot be empty")
+	}
+	return s.userRepo.UpdateProfile(ctx, userID, name)
+}
+
+func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, currentPassword, newPassword string) error {
+	if len(newPassword) < 8 {
+		return errors.New("new password must be at least 8 characters")
+	}
+
+	user, err := s.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(currentPassword)); err != nil {
+		return errors.New("current password is incorrect")
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	if err := s.userRepo.UpdatePassword(ctx, userID, string(hashed)); err != nil {
+		return err
+	}
+
+	// Invalidate older refresh tokens on password change for security
+	_ = s.userRepo.RevokeAllUserTokens(ctx, userID)
+	return nil
+}
+
 func (s *AuthService) ValidateAccessToken(tokenString string) (*JWTClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

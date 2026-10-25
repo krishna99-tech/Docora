@@ -85,7 +85,7 @@ func (r *WorkspaceRepository) GetWorkspacesForUser(ctx context.Context, userID u
 	}
 	defer rows.Close()
 
-	var workspaces []models.Workspace
+	workspaces := make([]models.Workspace, 0)
 	for rows.Next() {
 		var ws models.Workspace
 		if err := rows.Scan(&ws.ID, &ws.Name, &ws.Slug, &ws.OwnerID, &ws.CreatedAt, &ws.UpdatedAt); err != nil {
@@ -123,7 +123,7 @@ func (r *WorkspaceRepository) GetMembers(ctx context.Context, workspaceID uuid.U
 	}
 	defer rows.Close()
 
-	var members []models.WorkspaceMember
+	members := make([]models.WorkspaceMember, 0)
 	for rows.Next() {
 		var m models.WorkspaceMember
 		if err := rows.Scan(&m.ID, &m.WorkspaceID, &m.UserID, &m.Role, &m.CreatedAt, &m.UserName, &m.UserEmail); err != nil {

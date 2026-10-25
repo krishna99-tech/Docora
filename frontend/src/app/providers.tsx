@@ -11,6 +11,8 @@ interface AuthContextType {
   login: (data: { email: string; password: string }) => Promise<void>;
   register: (data: { name: string; email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserProfile: (data: { name: string }) => Promise<User>;
+  refreshUser: () => Promise<void>;
 }
 
 interface ThemeContextType {
@@ -144,6 +146,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
     window.location.href = '/login';
   };
 
+  const updateUserProfile = async (data: { name: string }) => {
+    const updated = await api.updateProfile(data);
+    setUser(updated);
+    return updated;
+  };
+
+  const refreshUser = async () => {
+    try {
+      const u = await api.me();
+      setUser(u);
+    } catch {
+      // User may not be logged in
+    }
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeContext.Provider value={{ theme, toggleTheme }}>
@@ -157,7 +174,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
             toggleTabletCollapse,
           }}
         >
-          <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+          <AuthContext.Provider
+            value={{
+              user,
+              isLoading,
+              login,
+              register,
+              logout,
+              updateUserProfile,
+              refreshUser,
+            }}
+          >
             {children}
           </AuthContext.Provider>
         </NavigationContext.Provider>

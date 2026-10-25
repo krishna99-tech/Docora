@@ -20,6 +20,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Header } from '@/components/layout/header';
+import { TablePagination } from '@/components/ui/table-pagination';
+import { PDFPreviewRenderer } from '@/components/pdf/pdf-preview-renderer';
+import { api } from '@/lib/api';
 
 type ToolType = 'merge' | 'compress' | 'rotate' | 'watermark' | 'page-numbers' | 'images-to-pdf' | 'metadata';
 
@@ -55,24 +59,34 @@ export default function PDFToolsPage() {
   const [rotationAngle, setRotationAngle] = useState('90');
   const [pageNumbersPos, setPageNumbersPos] = useState('bottom-right');
 
-  // Job history
+  // Job history and pagination
   const [recentJobs, setRecentJobs] = useState<any[]>([]);
+  const [jobsPage, setJobsPage] = useState(1);
+  const jobsPerPage = 5;
 
   useEffect(() => {
     fetchJobs();
+    return () => {
+      if (resultBlobUrl) {
+        URL.revokeObjectURL(resultBlobUrl);
+      }
+    };
   }, []);
 
-  const fetchJobs = () => {
-    fetch('/api/v1/pdf-tools/jobs')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        if (Array.isArray(data)) setRecentJobs(data);
-      })
-      .catch(() => {});
+  const fetchJobs = async () => {
+    try {
+      const data = await api.pdfGetJobs();
+      if (Array.isArray(data)) setRecentJobs(data);
+    } catch {
+      // Non-critical background list
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
+      if (resultBlobUrl) {
+        URL.revokeObjectURL(resultBlobUrl);
+      }
       setFiles(Array.from(e.target.files));
       setError(null);
       setResultBlobUrl(null);
@@ -86,6 +100,10 @@ export default function PDFToolsPage() {
       return;
     }
 
+    if (resultBlobUrl) {
+      URL.revokeObjectURL(resultBlobUrl);
+    }
+
     setProcessing(true);
     setError(null);
     setResultBlobUrl(null);
@@ -94,81 +112,80 @@ export default function PDFToolsPage() {
     const formData = new FormData();
 
     try {
-      let endpoint = '';
       if (activeTool === 'merge') {
         if (files.length < 2) {
           throw new Error('Merge requires at least 2 PDF files');
         }
         files.forEach((f) => formData.append('files', f));
-        endpoint = '/api/v1/pdf-tools/merge?download=true';
+        const blob = await api.pdfMerge(formData);
+        const url = URL.createObjectURL(blob);
+        setResultBlobUrl(url);
+        setResultFileName(`merged_${Date.now()}.pdf`);
       } else if (activeTool === 'compress') {
         formData.append('file', files[0]);
-        endpoint = '/api/v1/pdf-tools/compress?download=true';
+        const blob = await api.pdfCompress(formData, true);
+        const url = URL.createObjectURL(blob);
+        setResultBlobUrl(url);
+        setResultFileName(`compressed_${Date.now()}.pdf`);
       } else if (activeTool === 'rotate') {
         formData.append('file', files[0]);
         formData.append('angle', rotationAngle);
-        endpoint = '/api/v1/pdf-tools/rotate';
+        const blob = await api.pdfRotate(formData);
+        const url = URL.createObjectURL(blob);
+        setResultBlobUrl(url);
+        setResultFileName(`rotated_${Date.now()}.pdf`);
       } else if (activeTool === 'watermark') {
         formData.append('file', files[0]);
         formData.append('text', watermarkText);
         formData.append('opacity', watermarkOpacity);
-        endpoint = '/api/v1/pdf-tools/watermark';
+        const blob = await api.pdfWatermark(formData);
+        const url = URL.createObjectURL(blob);
+        setResultBlobUrl(url);
+        setResultFileName(`watermarked_${Date.now()}.pdf`);
       } else if (activeTool === 'page-numbers') {
         formData.append('file', files[0]);
         formData.append('position', pageNumbersPos);
-        endpoint = '/api/v1/pdf-tools/page-numbers';
-      } else if (activeTool === 'images-to-pdf') {
-        files.forEach((f) => formData.append('images', f));
-        endpoint = '/api/v1/pdf-tools/images-to-pdf';
-      } else if (activeTool === 'metadata') {
-        formData.append('file', files[0]);
-        endpoint = '/api/v1/pdf-tools/metadata';
-      }
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || 'Operation failed on server');
-      }
-
-      if (activeTool === 'metadata') {
-        const meta = await res.json();
-        setMetadataInfo(meta);
-      } else {
-        const blob = await res.blob();
+        const blob = await api.pdfPageNumbers(formData);
         const url = URL.createObjectURL(blob);
         setResultBlobUrl(url);
-        setResultFileName(`${activeTool}_${Date.now()}.pdf`);
+        setResultFileName(`numbered_${Date.now()}.pdf`);
+      } else if (activeTool === 'images-to-pdf') {
+        files.forEach((f) => formData.append('images', f));
+        const blob = await api.pdfImagesToPdf(formData);
+        const url = URL.createObjectURL(blob);
+        setResultBlobUrl(url);
+        setResultFileName(`converted_${Date.now()}.pdf`);
+      } else if (activeTool === 'metadata') {
+        formData.append('file', files[0]);
+        const meta = await api.pdfMetadata(formData);
+        setMetadataInfo(meta);
       }
 
       fetchJobs();
     } catch (err: any) {
-      setError(err.message || 'Processing failed');
+      const msg = err.message || 'Processing failed';
+      if (msg.toLowerCase().includes('auth') || msg.includes('401')) {
+        setError('Your session may have expired or authentication is required. Please check your login status.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setProcessing(false);
     }
   };
 
-  return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 py-4">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]">
-        <div>
-          <div className="flex items-center gap-2">
-            <Wrench className="w-5 h-5 text-[var(--foreground)]" />
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">PDF Utilities</h1>
-          </div>
-          <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
-            Professional PDF manipulation and processing tools powered by Go.
-          </p>
-        </div>
-      </div>
+  const paginatedJobs = recentJobs.slice((jobsPage - 1) * jobsPerPage, jobsPage * jobsPerPage);
+  const totalJobsPages = Math.ceil(recentJobs.length / jobsPerPage);
 
-      {/* Tool Selector Grid */}
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header
+        title="PDF Tools"
+        description="Professional PDF manipulation, compression, rotation, stamping, and conversion tools"
+      />
+
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
+        {/* Tool Selector Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
         {TOOLS.map((t) => {
           const Icon = t.icon;
@@ -400,7 +417,16 @@ export default function PDFToolsPage() {
 
               {resultBlobUrl && (
                 <div className="mt-3 rounded-xl overflow-hidden border border-[var(--border)] h-[400px]">
-                  <iframe src={resultBlobUrl} className="w-full h-full border-0" title="Result PDF Preview" />
+                  <PDFPreviewRenderer
+                    blobUrl={resultBlobUrl}
+                    documentNumber="Processed PDF"
+                    onDownload={() => {
+                      const a = document.createElement('a');
+                      a.href = resultBlobUrl;
+                      a.download = 'processed_result.pdf';
+                      a.click();
+                    }}
+                  />
                 </div>
               )}
             </div>
@@ -419,36 +445,48 @@ export default function PDFToolsPage() {
               No recent background jobs. Run a tool to see execution history.
             </div>
           ) : (
-            <ul className="space-y-2.5">
-              {recentJobs.slice(0, 8).map((j: any) => (
-                <li
-                  key={j.id}
-                  className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs flex flex-col gap-1"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold uppercase tracking-wider text-[11px] text-[var(--foreground)]">
-                      {j.jobType}
-                    </span>
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                        j.status === 'completed'
-                          ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/40'
-                          : 'bg-neutral-800 text-neutral-400'
-                      }`}
-                    >
-                      {j.status}
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-[var(--muted-foreground)] truncate">{j.outputFilename}</div>
-                  <div className="text-[10px] text-neutral-500 font-mono">
-                    {new Date(j.createdAt).toLocaleDateString()} {new Date(j.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-3">
+              <ul className="space-y-2.5">
+                {paginatedJobs.map((j: any) => (
+                  <li
+                    key={j.id}
+                    className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs flex flex-col gap-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold uppercase tracking-wider text-[11px] text-[var(--foreground)]">
+                        {j.jobType}
+                      </span>
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                          j.status === 'completed'
+                            ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/40'
+                            : 'bg-neutral-800 text-neutral-400'
+                        }`}
+                      >
+                        {j.status}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-[var(--muted-foreground)] truncate">{j.outputFilename}</div>
+                    <div className="text-[10px] text-neutral-500 font-mono">
+                      {new Date(j.createdAt).toLocaleDateString()} {new Date(j.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <TablePagination
+                page={jobsPage}
+                totalPages={totalJobsPages}
+                totalItems={recentJobs.length}
+                pageSize={jobsPerPage}
+                onPageChange={setJobsPage}
+                itemName="operations"
+              />
+            </div>
           )}
         </div>
       </div>
     </div>
+  </div>
   );
 }

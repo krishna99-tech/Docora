@@ -91,6 +91,8 @@ func (h *DocumentHandler) Preview(c *gin.Context) {
 
 	c.Header("Content-Type", "application/pdf")
 	c.Header("Content-Disposition", "inline; filename=document_preview.pdf")
+	c.Header("X-Content-Type-Options", "nosniff")
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 	c.Data(http.StatusOK, "application/pdf", pdfBytes)
 }
 

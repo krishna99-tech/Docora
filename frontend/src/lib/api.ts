@@ -10,6 +10,22 @@ import {
   PaginatedResponse,
   Template,
   User,
+  Workflow,
+  CreateWorkflowInput,
+  UpdateWorkflowInput,
+  WorkflowVersion,
+  WorkflowExecution,
+  WorkflowApproval,
+  WorkflowSchedule,
+  SaveScheduleInput,
+  WorkflowAnalytics,
+  DryRunResponse,
+  WorkflowTemplate,
+  ApiKey,
+  Webhook,
+  WebhookDelivery,
+  Workspace,
+  WorkspaceMember,
 } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
@@ -17,11 +33,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1';
 class ApiClient {
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
+  private activeWorkspaceId: string | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
       this.accessToken = localStorage.getItem('docora_access_token');
       this.refreshToken = localStorage.getItem('docora_refresh_token');
+      this.activeWorkspaceId = localStorage.getItem('docora_active_workspace_id');
     }
   }
 
@@ -41,6 +59,7 @@ class ApiClient {
       localStorage.removeItem('docora_access_token');
       localStorage.removeItem('docora_refresh_token');
       localStorage.removeItem('docora_user');
+      localStorage.removeItem('docora_active_workspace_id');
     }
   }
 
@@ -49,6 +68,26 @@ class ApiClient {
       this.accessToken = localStorage.getItem('docora_access_token');
     }
     return this.accessToken;
+  }
+
+  getActiveWorkspaceId(): string | null {
+    if (!this.activeWorkspaceId && typeof window !== 'undefined') {
+      this.activeWorkspaceId = localStorage.getItem('docora_active_workspace_id');
+    }
+    return this.activeWorkspaceId;
+  }
+
+  setActiveWorkspaceId(id: string | null) {
+    this.activeWorkspaceId = id;
+    if (typeof window !== 'undefined') {
+      if (id) {
+        localStorage.setItem('docora_active_workspace_id', id);
+        window.dispatchEvent(new CustomEvent('workspace-changed', { detail: { workspaceId: id } }));
+      } else {
+        localStorage.removeItem('docora_active_workspace_id');
+        window.dispatchEvent(new CustomEvent('workspace-changed', { detail: { workspaceId: null } }));
+      }
+    }
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -62,6 +101,11 @@ class ApiClient {
     const token = this.getAccessToken();
     if (token && !headers.has('Authorization')) {
       headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const wsId = this.getActiveWorkspaceId();
+    if (wsId && !headers.has('X-Workspace-ID')) {
+      headers.set('X-Workspace-ID', wsId);
     }
 
     let response = await fetch(url, { ...options, headers });
@@ -96,6 +140,55 @@ class ApiClient {
     }
 
     return response.json();
+  }
+
+  async requestBlob(endpoint: string, options: RequestInit = {}): Promise<Blob> {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const headers = new Headers(options.headers || {});
+
+    const token = this.getAccessToken();
+    if (token && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const wsId = this.getActiveWorkspaceId();
+    if (wsId && !headers.has('X-Workspace-ID')) {
+      headers.set('X-Workspace-ID', wsId);
+    }
+
+    let response = await fetch(url, { ...options, headers });
+
+    // Handle 401 Unauthorized by attempting a token refresh
+    if (response.status === 401 && this.refreshToken && !endpoint.includes('/auth/')) {
+      const refreshed = await this.tryRefreshToken();
+      if (refreshed) {
+        headers.set('Authorization', `Bearer ${this.accessToken}`);
+        response = await fetch(url, { ...options, headers });
+      } else {
+        this.clearTokens();
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
+      }
+    }
+
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // Fallback to status text
+      }
+      throw new Error(errorMessage);
+    }
+
+    const rawBlob = await response.blob();
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/pdf') || endpoint.includes('pdf') || endpoint.includes('preview')) {
+      return new Blob([rawBlob], { type: 'application/pdf' });
+    }
+    return rawBlob;
   }
 
   private async tryRefreshToken(): Promise<boolean> {
@@ -157,6 +250,24 @@ class ApiClient {
     return this.request<User>('/auth/me');
   }
 
+  async updateProfile(data: { name: string }): Promise<User> {
+    const updated = await this.request<User>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('docora_user', JSON.stringify(updated));
+    }
+    return updated;
+  }
+
+  async changePassword(data: { currentPassword: string; newPassword: string }): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Dashboard Endpoints
   async getDashboardStats(): Promise<DashboardStats> {
     return this.request<DashboardStats>('/dashboard/stats');
@@ -194,6 +305,13 @@ class ApiClient {
     return this.request<void>(`/receipts/${id}/cancel`, { method: 'POST' });
   }
 
+  async updateReceipt(id: string, data: CreateReceiptInput): Promise<Document> {
+    return this.request<Document>(`/receipts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Invoices Endpoints
   async createInvoice(data: CreateInvoiceInput): Promise<Document> {
     return this.request<Document>('/invoices', {
@@ -222,6 +340,13 @@ class ApiClient {
     return this.request<void>(`/invoices/${id}/cancel`, { method: 'POST' });
   }
 
+  async updateInvoice(id: string, data: CreateInvoiceInput): Promise<Document> {
+    return this.request<Document>(`/invoices/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
   // General Documents Endpoints
   async listDocuments(params: Record<string, string | number> = {}): Promise<PaginatedResponse<Document>> {
     const query = new URLSearchParams();
@@ -248,21 +373,11 @@ class ApiClient {
 
   // Previews & Downloads
   async getDocumentPreviewBlob(id: string): Promise<Blob> {
-    const token = this.getAccessToken();
-    const res = await fetch(`${API_BASE_URL}/documents/${id}/preview`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) throw new Error('Failed to generate preview PDF');
-    return res.blob();
+    return this.requestBlob(`/documents/${id}/preview`);
   }
 
   async downloadDocument(id: string, filename: string): Promise<void> {
-    const token = this.getAccessToken();
-    const res = await fetch(`${API_BASE_URL}/documents/${id}/download`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) throw new Error('Failed to download PDF document');
-    const blob = await res.blob();
+    const blob = await this.requestBlob(`/documents/${id}/download`);
     const downloadUrl = window.URL.createObjectURL(blob);
     const a = window.document.createElement('a');
     a.href = downloadUrl;
@@ -347,6 +462,308 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // PDF Tools Endpoints
+  async pdfMerge(formData: FormData): Promise<Blob> {
+    return this.requestBlob('/pdf-tools/merge?download=true', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async pdfCompress(formData: FormData, download = true): Promise<Blob> {
+    const query = download ? '?download=true' : '';
+    return this.requestBlob(`/pdf-tools/compress${query}`, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async pdfRotate(formData: FormData): Promise<Blob> {
+    return this.requestBlob('/pdf-tools/rotate', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async pdfWatermark(formData: FormData): Promise<Blob> {
+    return this.requestBlob('/pdf-tools/watermark', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async pdfPageNumbers(formData: FormData): Promise<Blob> {
+    return this.requestBlob('/pdf-tools/page-numbers', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async pdfImagesToPdf(formData: FormData): Promise<Blob> {
+    return this.requestBlob('/pdf-tools/images-to-pdf', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async pdfMetadata(formData: FormData): Promise<any> {
+    return this.request<any>('/pdf-tools/metadata', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async pdfGetJobs(): Promise<any[]> {
+    return this.request<any[]>('/pdf-tools/jobs');
+  }
+
+  // ---------------------------------------------------------------------------
+  // WORKFLOW AUTOMATION PLATFORM API
+  // ---------------------------------------------------------------------------
+
+  async getWorkflows(params?: { search?: string; category?: string; status?: string }): Promise<Workflow[]> {
+    const q = new URLSearchParams();
+    if (params?.search) q.append('search', params.search);
+    if (params?.category) q.append('category', params.category);
+    if (params?.status) q.append('status', params.status);
+    const qs = q.toString() ? `?${q.toString()}` : '';
+    return this.request<Workflow[]>(`/workflows${qs}`);
+  }
+
+  async getWorkflow(id: string): Promise<Workflow> {
+    return this.request<Workflow>(`/workflows/${id}`);
+  }
+
+  async createWorkflow(data: CreateWorkflowInput): Promise<Workflow> {
+    return this.request<Workflow>('/workflows', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateWorkflow(id: string, data: UpdateWorkflowInput): Promise<Workflow> {
+    return this.request<Workflow>(`/workflows/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteWorkflow(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/workflows/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async duplicateWorkflow(id: string): Promise<Workflow> {
+    return this.request<Workflow>(`/workflows/${id}/duplicate`, {
+      method: 'POST',
+    });
+  }
+
+  async triggerWorkflow(id: string, context?: Record<string, any>, documentId?: string): Promise<WorkflowExecution> {
+    return this.request<WorkflowExecution>(`/workflows/${id}/trigger`, {
+      method: 'POST',
+      body: JSON.stringify({ context, documentId }),
+    });
+  }
+
+  async testWorkflow(id: string, sampleInput: Record<string, any>, definition?: any): Promise<DryRunResponse> {
+    return this.request<DryRunResponse>(`/workflows/${id}/test`, {
+      method: 'POST',
+      body: JSON.stringify({ definition, sampleInput }),
+    });
+  }
+
+  async dryRunWorkflow(data: { definition: any; sampleInput?: Record<string, any> }): Promise<DryRunResponse> {
+    return this.request<DryRunResponse>('/workflows/test', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async bulkExecuteWorkflow(
+    id: string,
+    data: { records?: any[]; csvData?: string; fieldMapping?: Record<string, string>; createZip?: boolean }
+  ): Promise<WorkflowExecution> {
+    return this.request<WorkflowExecution>(`/workflows/${id}/bulk`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getWorkflowVersions(id: string): Promise<WorkflowVersion[]> {
+    return this.request<WorkflowVersion[]>(`/workflows/${id}/versions`);
+  }
+
+  async restoreWorkflowVersion(id: string, version: number): Promise<Workflow> {
+    return this.request<Workflow>(`/workflows/${id}/versions/${version}/restore`, {
+      method: 'POST',
+    });
+  }
+
+  async getWorkflowExecutions(
+    id?: string,
+    params?: { status?: string; limit?: number; offset?: number }
+  ): Promise<WorkflowExecution[]> {
+    const q = new URLSearchParams();
+    if (params?.status) q.append('status', params.status);
+    if (params?.limit) q.append('limit', params.limit.toString());
+    if (params?.offset) q.append('offset', params.offset.toString());
+    const qs = q.toString() ? `?${q.toString()}` : '';
+
+    if (id) {
+      return this.request<WorkflowExecution[]>(`/workflows/${id}/executions${qs}`);
+    }
+    return this.request<WorkflowExecution[]>(`/workflows/executions${qs}`);
+  }
+
+  async getWorkflowExecution(executionId: string): Promise<WorkflowExecution> {
+    return this.request<WorkflowExecution>(`/workflows/executions/${executionId}`);
+  }
+
+  async retryWorkflowExecution(executionId: string): Promise<WorkflowExecution> {
+    return this.request<WorkflowExecution>(`/workflows/executions/${executionId}/retry`, {
+      method: 'POST',
+    });
+  }
+
+  async cancelWorkflowExecution(executionId: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/workflows/executions/${executionId}/cancel`, {
+      method: 'POST',
+    });
+  }
+
+  async getWorkflowApprovals(status?: string): Promise<WorkflowApproval[]> {
+    const q = status ? `?status=${status}` : '';
+    return this.request<WorkflowApproval[]>(`/workflows/approvals${q}`);
+  }
+
+  async decideWorkflowApproval(
+    approvalId: string,
+    status: 'approved' | 'rejected',
+    decisionNotes?: string
+  ): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/workflows/approvals/${approvalId}/decide`, {
+      method: 'POST',
+      body: JSON.stringify({ status, decisionNotes }),
+    });
+  }
+
+  async getWorkflowSchedule(id: string): Promise<WorkflowSchedule | null> {
+    return this.request<WorkflowSchedule | null>(`/workflows/${id}/schedule`);
+  }
+
+  async saveWorkflowSchedule(id: string, data: SaveScheduleInput): Promise<WorkflowSchedule> {
+    return this.request<WorkflowSchedule>(`/workflows/${id}/schedule`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getWorkflowAnalytics(): Promise<WorkflowAnalytics> {
+    return this.request<WorkflowAnalytics>('/workflows/analytics');
+  }
+
+  async getWorkflowTemplates(): Promise<WorkflowTemplate[]> {
+    return this.request<WorkflowTemplate[]>('/workflows/templates');
+  }
+
+  async exportWorkflow(id: string): Promise<any> {
+    return this.request<any>(`/workflows/${id}/export`);
+  }
+
+  async importWorkflow(data: any): Promise<Workflow> {
+    return this.request<Workflow>('/workflows/import', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Developer Platform
+  async listApiKeys(): Promise<ApiKey[]> {
+    return this.request<ApiKey[]>('/developer/keys');
+  }
+
+  async createApiKey(data: { name: string; permissions: string[] }): Promise<ApiKey> {
+    return this.request<ApiKey>('/developer/keys', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async revokeApiKey(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/developer/keys/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async listWebhooks(): Promise<Webhook[]> {
+    return this.request<Webhook[]>('/developer/webhooks');
+  }
+
+  async createWebhook(data: { targetUrl: string; events: string[]; secret?: string }): Promise<Webhook> {
+    return this.request<Webhook>('/developer/webhooks', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteWebhook(id: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/developer/webhooks/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async listWebhookDeliveries(webhookId: string): Promise<WebhookDelivery[]> {
+    return this.request<WebhookDelivery[]>(`/developer/webhooks/${webhookId}/deliveries`);
+  }
+
+  async testWebhook(webhookId: string, eventType?: string): Promise<WebhookDelivery> {
+    return this.request<WebhookDelivery>(`/developer/webhooks/${webhookId}/test`, {
+      method: 'POST',
+      body: JSON.stringify({ eventType: eventType || 'document.created' }),
+    });
+  }
+
+  // Workspaces
+  async listWorkspaces(): Promise<Workspace[]> {
+    return this.request<Workspace[]>('/workspaces');
+  }
+
+  async createWorkspace(data: { name: string; slug: string }): Promise<Workspace> {
+    return this.request<Workspace>('/workspaces', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getWorkspace(id: string): Promise<Workspace> {
+    return this.request<Workspace>(`/workspaces/${id}`);
+  }
+
+  async getWorkspaceMembers(id: string): Promise<WorkspaceMember[]> {
+    return this.request<WorkspaceMember[]>(`/workspaces/${id}/members`);
+  }
+
+  async addWorkspaceMember(id: string, data: { email: string; role: string }): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/workspaces/${id}/members`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async removeWorkspaceMember(id: string, userId: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/workspaces/${id}/members/${userId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // PDF Processing Jobs
+  async listPdfJobs(): Promise<any[]> {
+    return this.request<any[]>('/pdf-tools/jobs');
+  }
 }
 
 export const api = new ApiClient();
+

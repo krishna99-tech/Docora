@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
 import { Customer } from '@/types';
 import { formatDate } from '@/lib/utils';
+import { TablePagination } from '@/components/ui/table-pagination';
 
 export default function CustomersPage() {
   const [search, setSearch] = useState('');
@@ -176,6 +177,16 @@ export default function CustomersPage() {
               </tbody>
             </table>
           </div>
+          {data && (
+            <TablePagination
+              page={page}
+              totalPages={Math.ceil(data.total / 15) || 1}
+              totalItems={data.total}
+              pageSize={15}
+              onPageChange={setPage}
+              itemName="customers"
+            />
+          )}
         </Card>
 
         {/* Mobile Customer Cards (< 640px) */}
@@ -225,6 +236,17 @@ export default function CustomersPage() {
                 </div>
               </Card>
             ))
+          )}
+
+          {data && (
+            <TablePagination
+              page={page}
+              totalPages={Math.ceil(data.total / 15) || 1}
+              totalItems={data.total}
+              pageSize={15}
+              onPageChange={setPage}
+              itemName="customers"
+            />
           )}
         </div>
       </div>

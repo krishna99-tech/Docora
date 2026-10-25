@@ -159,6 +159,47 @@ func (s *DocumentService) CreateReceipt(ctx context.Context, userID uuid.UUID, r
 	return s.docRepo.GetByID(ctx, userID, doc.ID)
 }
 
+func (s *DocumentService) UpdateReceipt(ctx context.Context, userID, docID uuid.UUID, req models.CreateReceiptRequest) (*models.Document, error) {
+	calcItems, subtotal, discount, tax, total, balance := CalculateDocumentTotals(req.Items, req.AmountPaidMinor)
+
+	doc, err := s.docRepo.GetByID(ctx, userID, docID)
+	if err != nil {
+		return nil, err
+	}
+	if doc.Status == models.StatusFinalized || doc.Status == models.StatusPaid {
+		return nil, ErrCannotFinalize
+	}
+
+	doc.CustomerID = req.CustomerID
+	if req.Title != "" {
+		doc.Title = req.Title
+	}
+	if req.Currency != "" {
+		doc.Currency = req.Currency
+	}
+	if req.IssueDate != nil && !req.IssueDate.IsZero() {
+		doc.IssueDate = *req.IssueDate
+	}
+	doc.PaymentMethod = req.PaymentMethod
+	doc.PaymentReference = req.PaymentReference
+	doc.AmountPaidMinor = req.AmountPaidMinor
+	doc.Notes = req.Notes
+	doc.Terms = req.Terms
+	doc.TemplateVersionID = req.TemplateVersionID
+	doc.SubtotalMinor = subtotal
+	doc.DiscountMinor = discount
+	doc.TaxMinor = tax
+	doc.TotalMinor = total
+	doc.BalanceMinor = balance
+	doc.Items = calcItems
+
+	if err := s.docRepo.Update(ctx, doc); err != nil {
+		return nil, err
+	}
+
+	return s.docRepo.GetByID(ctx, userID, docID)
+}
+
 func (s *DocumentService) CreateInvoice(ctx context.Context, userID uuid.UUID, req models.CreateInvoiceRequest) (*models.Document, error) {
 	calcItems, subtotal, discount, tax, total, balance := CalculateDocumentTotals(req.Items, req.AmountPaidMinor)
 
@@ -212,6 +253,48 @@ func (s *DocumentService) CreateInvoice(ctx context.Context, userID uuid.UUID, r
 	}
 
 	return s.docRepo.GetByID(ctx, userID, doc.ID)
+}
+
+func (s *DocumentService) UpdateInvoice(ctx context.Context, userID, docID uuid.UUID, req models.CreateInvoiceRequest) (*models.Document, error) {
+	calcItems, subtotal, discount, tax, total, balance := CalculateDocumentTotals(req.Items, req.AmountPaidMinor)
+
+	doc, err := s.docRepo.GetByID(ctx, userID, docID)
+	if err != nil {
+		return nil, err
+	}
+	if doc.Status == models.StatusFinalized || doc.Status == models.StatusPaid {
+		return nil, ErrCannotFinalize
+	}
+
+	doc.CustomerID = req.CustomerID
+	if req.Title != "" {
+		doc.Title = req.Title
+	}
+	if req.Currency != "" {
+		doc.Currency = req.Currency
+	}
+	if req.IssueDate != nil && !req.IssueDate.IsZero() {
+		doc.IssueDate = *req.IssueDate
+	}
+	doc.DueDate = req.DueDate
+	doc.PaymentMethod = req.PaymentMethod
+	doc.PaymentReference = req.PaymentReference
+	doc.AmountPaidMinor = req.AmountPaidMinor
+	doc.Notes = req.Notes
+	doc.Terms = req.Terms
+	doc.TemplateVersionID = req.TemplateVersionID
+	doc.SubtotalMinor = subtotal
+	doc.DiscountMinor = discount
+	doc.TaxMinor = tax
+	doc.TotalMinor = total
+	doc.BalanceMinor = balance
+	doc.Items = calcItems
+
+	if err := s.docRepo.Update(ctx, doc); err != nil {
+		return nil, err
+	}
+
+	return s.docRepo.GetByID(ctx, userID, docID)
 }
 
 func (s *DocumentService) CreateQuotation(ctx context.Context, userID uuid.UUID, req models.CreateQuotationRequest) (*models.Document, error) {

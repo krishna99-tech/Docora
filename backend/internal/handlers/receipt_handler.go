@@ -42,6 +42,34 @@ func (h *ReceiptHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, doc)
 }
 
+func (h *ReceiptHandler) Update(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid receipt ID"})
+		return
+	}
+
+	var req models.CreateReceiptRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Validation error: " + err.Error()})
+		return
+	}
+
+	doc, err := h.docService.UpdateReceipt(c.Request.Context(), userID, id, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed updating receipt: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, doc)
+}
+
 func (h *ReceiptHandler) List(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
@@ -117,6 +145,8 @@ func (h *ReceiptHandler) Preview(c *gin.Context) {
 
 	c.Header("Content-Type", "application/pdf")
 	c.Header("Content-Disposition", "inline; filename=preview.pdf")
+	c.Header("X-Content-Type-Options", "nosniff")
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 	c.Data(http.StatusOK, "application/pdf", pdfBytes)
 }
 

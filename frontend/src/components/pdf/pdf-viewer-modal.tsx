@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Download, Printer, CheckCircle, Loader2 } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
+import { PDFPreviewRenderer } from '@/components/pdf/pdf-preview-renderer';
 import { api } from '@/lib/api';
 
 interface PDFViewerModalProps {
@@ -11,6 +12,7 @@ interface PDFViewerModalProps {
   onClose: () => void;
   documentId: string | null;
   documentNumber?: string;
+  documentType?: 'receipt' | 'invoice' | 'general';
   isDraft?: boolean;
   onFinalized?: () => void;
 }
@@ -20,6 +22,7 @@ export function PDFViewerModal({
   onClose,
   documentId,
   documentNumber,
+  documentType = 'receipt',
   isDraft,
   onFinalized,
 }: PDFViewerModalProps) {
@@ -28,32 +31,37 @@ export function PDFViewerModal({
   const [error, setError] = useState<string | null>(null);
   const [isFinalizing, setIsFinalizing] = useState(false);
 
+  const loadPreview = () => {
+    if (!documentId) return;
+    setIsLoading(true);
+    setError(null);
+
+    api
+      .getDocumentPreviewBlob(documentId)
+      .then((blob) => {
+        // Enforce application/pdf MIME type for Brave Browser compatibility
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const url = URL.createObjectURL(pdfBlob);
+        setBlobUrl(url);
+      })
+      .catch((err) => {
+        setError(err.message || 'Failed to load PDF preview');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
   useEffect(() => {
-    let activeUrl: string | null = null;
-
     if (isOpen && documentId) {
-      setIsLoading(true);
-      setError(null);
-
-      api
-        .getDocumentPreviewBlob(documentId)
-        .then((blob) => {
-          activeUrl = URL.createObjectURL(blob);
-          setBlobUrl(activeUrl);
-        })
-        .catch((err) => {
-          setError(err.message || 'Failed to load PDF preview');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+      loadPreview();
     }
 
     return () => {
-      if (activeUrl) {
-        URL.revokeObjectURL(activeUrl);
-      }
-      setBlobUrl(null);
+      setBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
     };
   }, [isOpen, documentId]);
 
@@ -64,12 +72,25 @@ export function PDFViewerModal({
   };
 
   const handlePrint = () => {
-    if (blobUrl) {
+    if (!blobUrl) return;
+    try {
       const iframe = document.getElementById('pdf-preview-frame') as HTMLIFrameElement;
       if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.focus();
         iframe.contentWindow.print();
-      } else {
-        window.open(blobUrl, '_blank')?.print();
+        return;
+      }
+    } catch {
+      // In case iframe print is restricted by browser plugin sandbox
+    }
+
+    const printWin = window.open(blobUrl, '_blank');
+    if (printWin) {
+      printWin.focus();
+      try {
+        printWin.print();
+      } catch {
+        // Handled by browser PDF viewer toolbar
       }
     }
   };
@@ -78,7 +99,11 @@ export function PDFViewerModal({
     if (!documentId) return;
     try {
       setIsFinalizing(true);
-      await api.finalizeReceipt(documentId);
+      if (documentType === 'invoice') {
+        await api.finalizeInvoice(documentId);
+      } else {
+        await api.finalizeReceipt(documentId);
+      }
       if (onFinalized) onFinalized();
       onClose();
     } catch (err: any) {
@@ -126,27 +151,22 @@ export function PDFViewerModal({
         </div>
 
         {/* Viewer content */}
-        <div className="flex-1 w-full bg-[var(--surface-secondary)] rounded-lg border border-[var(--border)] overflow-hidden relative flex items-center justify-center">
-          {isLoading && (
+        <div className="flex-1 w-full bg-[var(--surface-secondary)] rounded-lg overflow-hidden relative flex items-center justify-center">
+          {isLoading ? (
             <div className="flex flex-col items-center gap-2 text-[var(--muted-foreground)]">
               <Loader2 className="w-8 h-8 animate-spin" />
               <span className="text-xs font-medium">Rendering PDF preview...</span>
             </div>
-          )}
-
-          {error && (
-            <div className="p-6 text-center max-w-md">
-              <p className="text-sm text-red-500 font-semibold mb-1">Failed to generate PDF</p>
-              <p className="text-xs text-[var(--muted-foreground)]">{error}</p>
-            </div>
-          )}
-
-          {!isLoading && !error && blobUrl && (
-            <iframe
-              id="pdf-preview-frame"
-              src={blobUrl}
-              className="w-full h-full border-0 rounded-lg"
-              title="PDF Preview"
+          ) : (
+            <PDFPreviewRenderer
+              blobUrl={blobUrl}
+              documentId={documentId}
+              documentNumber={documentNumber}
+              isDraft={isDraft}
+              onDownload={handleDownload}
+              onPrint={handlePrint}
+              onRetry={loadPreview}
+              errorMessage={error}
             />
           )}
         </div>

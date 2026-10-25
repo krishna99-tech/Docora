@@ -19,11 +19,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
+import { Header } from '@/components/layout/header';
+import { TablePagination } from '@/components/ui/table-pagination';
 
 export default function SharedDocumentsPage() {
   const [links, setLinks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   // New share link modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,125 +133,134 @@ export default function SharedDocumentsPage() {
     setTimeout(() => setCopiedId(null), 2500);
   };
 
+  const totalPages = Math.ceil(links.length / pageSize);
+  const paginatedLinks = links.slice((page - 1) * pageSize, page * pageSize);
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 py-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]">
-        <div>
-          <div className="flex items-center gap-2">
-            <Share2 className="w-5 h-5 text-[var(--foreground)]" />
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Shared Documents</h1>
-          </div>
-          <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
-            Create temporary, password-protected, and rate-limited document sharing links.
-          </p>
-        </div>
+    <div className="flex-1 flex flex-col">
+      <Header
+        title="Shared Documents"
+        description="Create temporary, password-protected, and rate-limited document sharing links"
+        action={{
+          label: 'Create Sharing Link',
+          onClick: openCreateModal,
+        }}
+      />
 
-        <Button
-          onClick={openCreateModal}
-          className="bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-semibold h-9"
-        >
-          <Plus className="w-4 h-4 mr-1.5" /> Create Sharing Link
-        </Button>
-      </div>
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
+        {/* Sharing Links Table / Cards */}
+        <div className="border border-[var(--border)] rounded-2xl bg-[var(--card)] overflow-hidden shadow-sm">
+          {loading ? (
+            <div className="p-8 text-center text-xs text-[var(--muted-foreground)]">Loading active links...</div>
+          ) : links.length === 0 ? (
+            <div className="p-12 text-center text-xs text-[var(--muted-foreground)]">
+              <Share2 className="w-8 h-8 text-[var(--muted-foreground)] mx-auto mb-2 opacity-50" />
+              <p className="font-semibold text-[var(--foreground)]">No Shared Links Yet</p>
+              <p className="mt-1">Generate a temporary, secure link to share invoices or receipts safely.</p>
+              <Button
+                onClick={openCreateModal}
+                className="mt-4 bg-white text-black hover:bg-neutral-200 text-xs font-semibold h-8"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" /> Create First Link
+              </Button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[var(--surface-secondary)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th className="py-3 px-4 font-semibold">Document</th>
+                    <th className="py-3 px-4 font-semibold">Security</th>
+                    <th className="py-3 px-4 font-semibold">Access Count</th>
+                    <th className="py-3 px-4 font-semibold">Expires</th>
+                    <th className="py-3 px-4 font-semibold">Status</th>
+                    <th className="py-3 px-4 text-right font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)] text-[var(--foreground)]">
+                  {paginatedLinks.map((link) => {
+                    const isExpired = link.expiresAt && new Date(link.expiresAt) < new Date();
+                    const isRevoked = link.isRevoked;
 
-      {/* Sharing Links Table / Cards */}
-      <div className="border border-[var(--border)] rounded-2xl bg-[var(--card)] overflow-hidden shadow-sm">
-        {loading ? (
-          <div className="p-8 text-center text-xs text-[var(--muted-foreground)]">Loading active links...</div>
-        ) : links.length === 0 ? (
-          <div className="p-12 text-center text-xs text-[var(--muted-foreground)]">
-            <Share2 className="w-8 h-8 text-[var(--muted-foreground)] mx-auto mb-2 opacity-50" />
-            <p className="font-semibold text-[var(--foreground)]">No Shared Links Yet</p>
-            <p className="mt-1">Generate a temporary, secure link to share invoices or receipts safely.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-[var(--surface)] border-b border-[var(--border)] text-[var(--muted-foreground)] uppercase tracking-wider text-[10px]">
-                <tr>
-                  <th className="py-3 px-4 font-semibold">Document</th>
-                  <th className="py-3 px-4 font-semibold">Security</th>
-                  <th className="py-3 px-4 font-semibold">Access Count</th>
-                  <th className="py-3 px-4 font-semibold">Expires</th>
-                  <th className="py-3 px-4 font-semibold">Status</th>
-                  <th className="py-3 px-4 text-right font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border)] text-[var(--foreground)]">
-                {links.map((link) => {
-                  const isExpired = link.expiresAt && new Date(link.expiresAt) < new Date();
-                  const isRevoked = link.isRevoked;
+                    return (
+                      <tr key={link.id} className="hover:bg-[var(--surface-hover)] transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="font-semibold text-sm">{link.documentTitle}</div>
+                          <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-mono">
+                            {link.documentType}
+                          </span>
+                        </td>
 
-                  return (
-                    <tr key={link.id} className="hover:bg-[var(--surface-hover)] transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-sm">{link.documentTitle}</div>
-                        <span className="text-[10px] text-[var(--muted-foreground)] uppercase font-mono">
-                          {link.documentType}
-                        </span>
-                      </td>
+                        <td className="py-3 px-4 space-y-1">
+                          <div className="flex items-center gap-1.5 text-[11px]">
+                            {link.hasPassword ? (
+                              <span className="inline-flex items-center gap-1 text-amber-500 font-medium">
+                                <Lock className="w-3 h-3" /> Password Protected
+                              </span>
+                            ) : (
+                              <span className="text-neutral-500">Public Link</span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-[var(--muted-foreground)]">
+                            {link.allowDownload ? 'Download Allowed' : 'View Only'}
+                          </div>
+                        </td>
 
-                      <td className="py-3 px-4 space-y-1">
-                        <div className="flex items-center gap-1.5 text-[11px]">
-                          {link.hasPassword ? (
-                            <span className="inline-flex items-center gap-1 text-amber-500 font-medium">
-                              <Lock className="w-3 h-3" /> Password Protected
-                            </span>
-                          ) : (
-                            <span className="text-neutral-500">Public Link</span>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-[var(--muted-foreground)]">
-                          {link.allowDownload ? 'Download Allowed' : 'View Only'}
-                        </div>
-                      </td>
+                        <td className="py-3 px-4 font-mono text-xs">
+                          {link.accessCount} {link.maxAccesses > 0 ? `/ ${link.maxAccesses}` : 'views'}
+                        </td>
 
-                      <td className="py-3 px-4 font-mono text-xs">
-                        {link.accessCount} {link.maxAccesses > 0 ? `/ ${link.maxAccesses}` : 'views'}
-                      </td>
+                        <td className="py-3 px-4 text-xs text-[var(--muted-foreground)]">
+                          {link.expiresAt
+                            ? new Date(link.expiresAt).toLocaleDateString() +
+                              ' ' +
+                              new Date(link.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                            : 'Never'}
+                        </td>
 
-                      <td className="py-3 px-4 text-xs text-[var(--muted-foreground)]">
-                        {link.expiresAt
-                          ? new Date(link.expiresAt).toLocaleDateString() +
-                            ' ' +
-                            new Date(link.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                          : 'Never'}
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-                            isRevoked
-                              ? 'bg-red-950/40 text-red-400 border border-red-800/40'
-                              : isExpired
-                              ? 'bg-amber-950/40 text-amber-400 border border-amber-800/40'
-                              : 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/40'
-                          }`}
-                        >
-                          {isRevoked ? 'REVOKED' : isExpired ? 'EXPIRED' : 'ACTIVE'}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 text-right">
-                        {!isRevoked && !isExpired && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRevoke(link.id)}
-                            className="text-xs h-7 text-red-400 hover:text-red-300 border-red-900/40"
+                        <td className="py-3 px-4">
+                          <span
+                            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                              isRevoked
+                                ? 'bg-red-950/40 text-red-400 border border-red-800/40'
+                                : isExpired
+                                ? 'bg-amber-950/40 text-amber-400 border border-amber-800/40'
+                                : 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/40'
+                            }`}
                           >
-                            <Ban className="w-3 h-3 mr-1" /> Revoke
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                            {isRevoked ? 'REVOKED' : isExpired ? 'EXPIRED' : 'ACTIVE'}
+                          </span>
+                        </td>
+
+                        <td className="py-3 px-4 text-right">
+                          {!isRevoked && !isExpired && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRevoke(link.id)}
+                              className="text-xs h-7 text-red-400 hover:text-red-300 border-red-900/40"
+                            >
+                              <Ban className="w-3 h-3 mr-1" /> Revoke
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              <TablePagination
+                page={page}
+                totalPages={totalPages}
+                totalItems={links.length}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                itemName="shared links"
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Create Sharing Link Modal */}

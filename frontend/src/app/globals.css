@@ -106,3 +106,90 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--ring);
 }
+
+/* ==========================================================================
+   Print Stylesheet
+   ========================================================================== */
+@media print {
+  /* Hide non-document application shell elements */
+  nav,
+  aside,
+  header,
+  footer,
+  .no-print,
+  [data-no-print="true"],
+  button,
+  .modal-backdrop,
+  .fixed,
+  .sidebar,
+  .app-header {
+    display: none !important;
+  }
+
+  /* Reset document and viewport */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #111111 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 11pt !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Isolate printable document container */
+  #printable-document,
+  .printable-area,
+  .print-document-sheet {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #111111 !important;
+    transform: none !important;
+  }
+
+  /* Print table optimizations */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  /* Prevent awkward splits */
+  .avoid-break,
+  .document-totals,
+  .document-signatures,
+  .document-header,
+  .info-box,
+  .info-grid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+}
+

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PDFPreviewRenderer } from '@/components/pdf/pdf-preview-renderer';
 
 interface SharedDocInfo {
   id: string;
@@ -197,11 +198,13 @@ function ShareContent() {
             </div>
 
             {pdfBlobUrl && (
-              <div className="flex-1 min-h-[70vh] bg-neutral-950">
-                <iframe
-                  src={`${pdfBlobUrl}#toolbar=0`}
-                  className="w-full h-full min-h-[70vh] border-0"
-                  title="Shared Document Viewer"
+              <div className="flex-1 min-h-[70vh] bg-neutral-950 p-2">
+                <PDFPreviewRenderer
+                  blobUrl={pdfBlobUrl}
+                  title={info?.title || 'Shared Document'}
+                  allowDownload={info?.allowDownload ?? true}
+                  allowPrint={true}
+                  className="min-h-[70vh]"
                 />
               </div>
             )}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"docora/backend/internal/middleware"
 	"docora/backend/internal/services"
 )
 
@@ -26,20 +27,18 @@ func (h *PDFToolsHandler) getWorkspaceID(c *gin.Context) uuid.UUID {
 	if wsID, err := uuid.Parse(wsHeader); err == nil {
 		return wsID
 	}
-	userIDVal, _ := c.Get("userId")
-	if uid, ok := userIDVal.(uuid.UUID); ok {
+	if uid, ok := middleware.GetUserID(c); ok {
 		return uid
 	}
 	return uuid.New()
 }
 
 func (h *PDFToolsHandler) Merge(c *gin.Context) {
-	userIDVal, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	userID := userIDVal.(uuid.UUID)
 	wsID := h.getWorkspaceID(c)
 
 	form, err := c.MultipartForm()
@@ -86,12 +85,11 @@ func (h *PDFToolsHandler) Merge(c *gin.Context) {
 }
 
 func (h *PDFToolsHandler) Compress(c *gin.Context) {
-	userIDVal, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	userID := userIDVal.(uuid.UUID)
 	wsID := h.getWorkspaceID(c)
 
 	file, header, err := c.Request.FormFile("file")
@@ -122,12 +120,11 @@ func (h *PDFToolsHandler) Compress(c *gin.Context) {
 }
 
 func (h *PDFToolsHandler) Rotate(c *gin.Context) {
-	userIDVal, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	userID := userIDVal.(uuid.UUID)
 	wsID := h.getWorkspaceID(c)
 
 	file, header, err := c.Request.FormFile("file")
@@ -162,12 +159,11 @@ func (h *PDFToolsHandler) Rotate(c *gin.Context) {
 }
 
 func (h *PDFToolsHandler) Watermark(c *gin.Context) {
-	userIDVal, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	userID := userIDVal.(uuid.UUID)
 	wsID := h.getWorkspaceID(c)
 
 	file, header, err := c.Request.FormFile("file")
@@ -192,12 +188,11 @@ func (h *PDFToolsHandler) Watermark(c *gin.Context) {
 }
 
 func (h *PDFToolsHandler) PageNumbers(c *gin.Context) {
-	userIDVal, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	userID := userIDVal.(uuid.UUID)
 	wsID := h.getWorkspaceID(c)
 
 	file, header, err := c.Request.FormFile("file")
@@ -219,12 +214,11 @@ func (h *PDFToolsHandler) PageNumbers(c *gin.Context) {
 }
 
 func (h *PDFToolsHandler) ImagesToPDF(c *gin.Context) {
-	userIDVal, exists := c.Get("userId")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
-	userID := userIDVal.(uuid.UUID)
 	wsID := h.getWorkspaceID(c)
 
 	form, err := c.MultipartForm()

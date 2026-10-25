@@ -178,3 +178,74 @@ func (s *DeveloperService) DispatchWebhook(ctx context.Context, wh *models.Webho
 
 	_ = s.devRepo.CreateDelivery(context.Background(), delivery)
 }
+
+func (s *DeveloperService) TestWebhook(ctx context.Context, id, workspaceID uuid.UUID, eventType string) (*models.WebhookDelivery, error) {
+	wh, err := s.devRepo.GetWebhook(ctx, id, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	if eventType == "" {
+		eventType = "document.created"
+	}
+	sampleData := map[string]interface{}{
+		"test":        true,
+		"documentId":  uuid.New().String(),
+		"title":       "Sample Verification Document",
+		"type":        "invoice",
+		"amount":      349.50,
+		"currency":    "USD",
+		"status":      "finalized",
+		"source":      "Developer Console Test Runner",
+		"triggeredAt": time.Now().UTC().Format(time.RFC3339),
+	}
+
+	payloadBytes, err := json.Marshal(map[string]interface{}{
+		"id":        uuid.New().String(),
+		"event":     eventType,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+		"data":      sampleData,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	mac := hmac.New(sha256.New, []byte(wh.Secret))
+	mac.Write(payloadBytes)
+	signature := hex.EncodeToString(mac.Sum(nil))
+
+	req, err := http.NewRequestWithContext(ctx, "POST", wh.TargetURL, bytes.NewReader(payloadBytes))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Docora-Signature", signature)
+	req.Header.Set("X-Docora-Event", eventType)
+	req.Header.Set("User-Agent", "Docora-Webhooks/1.0 (Test-Ping)")
+
+	delivery := &models.WebhookDelivery{
+		ID:        uuid.New(),
+		WebhookID: wh.ID,
+		EventType: eventType,
+		Payload:   payloadBytes,
+		Attempt:   1,
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		delivery.StatusCode = 0
+		delivery.ResponseBody = fmt.Sprintf("Network connection failed: %v", err)
+		delivery.Success = false
+	} else {
+		delivery.StatusCode = resp.StatusCode
+		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		resp.Body.Close()
+		delivery.ResponseBody = string(bodyBytes)
+		delivery.Success = (resp.StatusCode >= 200 && resp.StatusCode < 300)
+	}
+
+	if err := s.devRepo.CreateDelivery(ctx, delivery); err != nil {
+		return nil, err
+	}
+	return delivery, nil
+}
+

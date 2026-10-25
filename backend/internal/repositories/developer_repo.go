@@ -72,7 +72,7 @@ func (r *DeveloperRepository) ListApiKeys(ctx context.Context, workspaceID uuid.
 	}
 	defer rows.Close()
 
-	var keys []models.ApiKey
+	keys := make([]models.ApiKey, 0)
 	for rows.Next() {
 		var k models.ApiKey
 		var permsRaw []byte
@@ -134,7 +134,7 @@ func (r *DeveloperRepository) ListWebhooks(ctx context.Context, workspaceID uuid
 	}
 	defer rows.Close()
 
-	var hooks []models.Webhook
+	hooks := make([]models.Webhook, 0)
 	for rows.Next() {
 		var wh models.Webhook
 		var eventsRaw []byte
@@ -147,6 +147,24 @@ func (r *DeveloperRepository) ListWebhooks(ctx context.Context, workspaceID uuid
 		hooks = append(hooks, wh)
 	}
 	return hooks, nil
+}
+
+func (r *DeveloperRepository) GetWebhook(ctx context.Context, id, workspaceID uuid.UUID) (*models.Webhook, error) {
+	query := `
+		SELECT id, workspace_id, target_url, secret, events, is_active, created_at
+		FROM webhooks
+		WHERE id = $1 AND workspace_id = $2
+	`
+	var wh models.Webhook
+	var eventsRaw []byte
+	err := r.db.Pool.QueryRow(ctx, query, id, workspaceID).Scan(
+		&wh.ID, &wh.WorkspaceID, &wh.TargetURL, &wh.Secret, &eventsRaw, &wh.IsActive, &wh.CreatedAt,
+	)
+	if err != nil {
+		return nil, ErrWebhookNotFound
+	}
+	_ = json.Unmarshal(eventsRaw, &wh.Events)
+	return &wh, nil
 }
 
 func (r *DeveloperRepository) DeleteWebhook(ctx context.Context, id, workspaceID uuid.UUID) error {
@@ -188,7 +206,7 @@ func (r *DeveloperRepository) ListDeliveries(ctx context.Context, webhookID uuid
 	}
 	defer rows.Close()
 
-	var deliveries []models.WebhookDelivery
+	deliveries := make([]models.WebhookDelivery, 0)
 	for rows.Next() {
 		var d models.WebhookDelivery
 		if err := rows.Scan(&d.ID, &d.WebhookID, &d.EventType, &d.Payload, &d.StatusCode, &d.ResponseBody, &d.Attempt, &d.Success, &d.CreatedAt); err != nil {

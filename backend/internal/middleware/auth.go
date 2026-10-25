@@ -50,7 +50,9 @@ func Auth(authService *services.AuthService) gin.HandlerFunc {
 		}
 
 		c.Set(ContextUserIDKey, claims.UserID)
+		c.Set("userId", claims.UserID)
 		c.Set(ContextUserEmailKey, claims.Email)
+		c.Set("userEmail", claims.Email)
 		c.Next()
 	}
 }
@@ -59,7 +61,10 @@ func Auth(authService *services.AuthService) gin.HandlerFunc {
 func GetUserID(c *gin.Context) (uuid.UUID, bool) {
 	val, exists := c.Get(ContextUserIDKey)
 	if !exists {
-		return uuid.Nil, false
+		val, exists = c.Get("userId")
+		if !exists {
+			return uuid.Nil, false
+		}
 	}
 	id, ok := val.(uuid.UUID)
 	return id, ok

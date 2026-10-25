@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Header } from '@/components/layout/header';
+import { TablePagination } from '@/components/ui/table-pagination';
 
 export default function VerificationDashboardPage() {
   const [tokenInput, setTokenInput] = useState('');
@@ -28,9 +30,11 @@ export default function VerificationDashboardPage() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [integrityLoading, setIntegrityLoading] = useState<string | null>(null);
   const [integrityResults, setIntegrityResults] = useState<Record<string, any>>({});
+  const [docPage, setDocPage] = useState(1);
+  const docPageSize = 5;
 
   useEffect(() => {
-    fetch('/api/v1/documents?status=finalized&pageSize=10')
+    fetch('/api/v1/documents?status=finalized&pageSize=50')
       .then((res) => (res.ok ? res.json() : { data: [] }))
       .then((res) => {
         if (res.data) setDocuments(res.data);
@@ -80,22 +84,18 @@ export default function VerificationDashboardPage() {
     }
   };
 
-  return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 py-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]">
-        <div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-[var(--foreground)]" />
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Verification & Integrity</h1>
-          </div>
-          <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
-            Verify authenticity, inspect QR verification payloads, and validate SHA-256 binary integrity.
-          </p>
-        </div>
-      </div>
+  const paginatedDocs = documents.slice((docPage - 1) * docPageSize, docPage * docPageSize);
+  const totalDocPages = Math.ceil(documents.length / docPageSize);
 
-      {/* Verification Lookup Tool */}
+  return (
+    <div className="flex-1 flex flex-col">
+      <Header
+        title="Verification & Integrity"
+        description="Verify authenticity, inspect QR verification payloads, and validate SHA-256 binary integrity"
+      />
+
+      <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
+        {/* Verification Lookup Tool */}
       <div className="border border-[var(--border)] rounded-2xl bg-[var(--card)] p-5 sm:p-6 shadow-sm">
         <h2 className="text-sm sm:text-base font-bold text-[var(--foreground)] mb-1">
           Verify Document Authenticity
@@ -189,7 +189,7 @@ export default function VerificationDashboardPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {documents.map((doc) => {
+            {paginatedDocs.map((doc) => {
               const res = integrityResults[doc.id];
               const isLoading = integrityLoading === doc.id;
 
@@ -245,9 +245,19 @@ export default function VerificationDashboardPage() {
                 </div>
               );
             })}
+
+            <TablePagination
+              page={docPage}
+              totalPages={totalDocPages}
+              totalItems={documents.length}
+              pageSize={docPageSize}
+              onPageChange={setDocPage}
+              itemName="documents"
+            />
           </div>
         )}
       </div>
     </div>
+  </div>
   );
 }

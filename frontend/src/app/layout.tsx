@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Enterprise receipt, invoice, and PDF document generator and management platform.',
 };
 
+import { OfflineBanner } from '@/components/errors/offline-banner';
+
 export default function RootLayout({
   children,
 }: {
@@ -18,7 +20,10 @@ export default function RootLayout({
         className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased"
         suppressHydrationWarning
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <OfflineBanner />
+          {children}
+        </Providers>
       </body>
     </html>
   );
