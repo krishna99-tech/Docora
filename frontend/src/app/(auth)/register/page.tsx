@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/providers';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ArrowRight, AlertCircle } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -39,71 +39,82 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--background)]">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] font-black text-xl mb-3 shadow-sm">
-            D
-          </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-[var(--foreground)]">DOCORA</h1>
-          <p className="text-xs text-[var(--muted-foreground)] uppercase tracking-wider font-semibold mt-1">
-            Receipt & PDF Studio
-          </p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--foreground)]">
+          Create an account
+        </h1>
+        <p className="text-sm text-[var(--muted-foreground)] mt-1.5">
+          Start generating verified receipts, invoices, and automated document workflows.
+        </p>
+      </div>
+
+      {error && (
+        <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="text-xs font-semibold text-[var(--foreground)] block mb-1.5">
+            Full name or Business name
+          </label>
+          <Input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Acme Inc. / Jane Doe"
+            required
+            autoFocus
+            className="h-10 text-xs"
+          />
         </div>
 
-        <Card className="border border-[var(--border)] shadow-md">
-          <CardHeader>
-            <CardTitle>Create Account</CardTitle>
-            <CardDescription>Start issuing receipts, invoices, and professional PDFs</CardDescription>
-          </CardHeader>
+        <div>
+          <label className="text-xs font-semibold text-[var(--foreground)] block mb-1.5">
+            Email address
+          </label>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@company.com"
+            required
+            className="h-10 text-xs"
+          />
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-500 rounded-md">
-                {error}
-              </div>
-            )}
+        <div>
+          <label className="text-xs font-semibold text-[var(--foreground)] block mb-1.5">
+            Password (min. 8 characters)
+          </label>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            className="h-10 text-xs"
+          />
+        </div>
 
-            <Input
-              label="Full Name or Business Name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Acme Inc. / John Doe"
-              required
-              autoFocus
-            />
+        <Button
+          type="submit"
+          variant="default"
+          className="w-full h-10 font-semibold text-xs mt-2"
+          isLoading={isLoading}
+        >
+          {isLoading ? 'Creating account...' : 'Create Account'} <ArrowRight className="w-4 h-4 ml-1.5" />
+        </Button>
+      </form>
 
-            <Input
-              label="Email Address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@business.com"
-              required
-            />
-
-            <Input
-              label="Password (min. 8 characters)"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
-
-            <Button type="submit" variant="default" className="w-full font-semibold" isLoading={isLoading}>
-              Register
-            </Button>
-          </form>
-
-          <div className="mt-6 pt-4 border-t border-[var(--border)] text-center text-xs text-[var(--muted-foreground)]">
-            Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-[var(--foreground)] hover:underline">
-              Sign in
-            </Link>
-          </div>
-        </Card>
+      <div className="pt-4 border-t border-[var(--border)] text-center text-xs text-[var(--muted-foreground)]">
+        Already have an account?{' '}
+        <Link href="/login" className="font-semibold text-[var(--foreground)] underline underline-offset-4 hover:opacity-80">
+          Sign in
+        </Link>
       </div>
     </div>
   );

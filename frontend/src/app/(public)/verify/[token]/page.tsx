@@ -175,7 +175,7 @@ function VerifyContent() {
 
       {/* Footer */}
       <footer className="max-w-3xl w-full mx-auto pt-6 border-t border-neutral-800 text-center text-xs text-neutral-600">
-        &copy; {new Date().getFullYear()} Docora Platform. All document records are cryptographically verified.
+        &copy; 2026 Docora Platform. All document records are cryptographically verified.
       </footer>
     </div>
   );

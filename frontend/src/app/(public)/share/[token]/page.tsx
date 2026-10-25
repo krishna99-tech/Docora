@@ -211,7 +211,7 @@ function ShareContent() {
 
       {/* Footer */}
       <footer className="max-w-5xl w-full mx-auto pt-4 border-t border-neutral-800 text-center text-xs text-neutral-600">
-        &copy; {new Date().getFullYear()} Docora. Secure end-to-end document sharing.
+        &copy; 2026 Docora. Secure end-to-end document sharing.
       </footer>
     </div>
   );
