@@ -43,10 +43,12 @@ import {
 import { WorkflowDryRunModal } from '@/components/workflow/workflow-dryrun-modal';
 import { WorkflowScheduleModal } from '@/components/workflow/workflow-schedule-modal';
 import { WorkflowBulkModal } from '@/components/workflow/workflow-bulk-modal';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { WorkflowVersionModal } from '@/components/workflow/workflow-version-modal';
 
 export default function WorkflowsDashboardPage() {
   const router = useRouter();
+  const confirm = useConfirm();
 
   // Data state
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
@@ -134,7 +136,15 @@ export default function WorkflowsDashboardPage() {
   };
 
   const handleDelete = async (wfId: string, name: string) => {
-    if (!confirm(`Delete workflow "${name}" permanently?`)) return;
+    const ok = await confirm({
+      title: 'Delete Workflow',
+      message: 'Are you sure you want to delete this workflow permanently? All version history and scheduled triggers will be removed.',
+      itemName: name,
+      itemType: 'Workflow Pipeline',
+      confirmText: 'Delete Workflow',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await api.deleteWorkflow(wfId);
       fetchDashboardData();

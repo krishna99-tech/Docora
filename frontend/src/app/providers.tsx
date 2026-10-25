@@ -4,6 +4,9 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { User } from '@/types';
 import { api } from '@/lib/api';
+import { ConfirmProvider, useConfirm } from '@/components/ui/confirm-dialog';
+
+export { useConfirm };
 
 interface AuthContextType {
   user: User | null;
@@ -180,7 +183,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
               refreshUser,
             }}
           >
-            {children}
+            <ConfirmProvider>
+              {children}
+            </ConfirmProvider>
           </AuthContext.Provider>
         </NavigationContext.Provider>
       </ThemeContext.Provider>

@@ -14,11 +14,13 @@ import { formatDate } from '@/lib/utils';
 import { PDFViewerModal } from '@/components/pdf/pdf-viewer-modal';
 import { DocumentPreviewContainer } from '@/components/preview/document-preview-container';
 import { ReceiptPreview } from '@/components/preview/receipt-preview';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function ReceiptDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
+  const confirm = useConfirm();
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -35,7 +37,16 @@ export default function ReceiptDetailPage() {
   });
 
   const handleFinalize = async () => {
-    if (!confirm('Are you sure you want to finalize this receipt? This will seal the document.')) return;
+    const ok = await confirm({
+      title: 'Finalize Receipt',
+      message: 'Are you sure you want to finalize this receipt? This will seal the document permanently.',
+      itemName: doc?.documentNumber || id,
+      itemType: 'Receipt',
+      confirmText: 'Finalize Receipt',
+      variant: 'primary',
+    });
+    if (!ok) return;
+
     setIsActionLoading(true);
     try {
       await api.finalizeReceipt(id);
@@ -48,7 +59,16 @@ export default function ReceiptDetailPage() {
   };
 
   const handleCancel = async () => {
-    if (!confirm('Are you sure you want to cancel this receipt?')) return;
+    const ok = await confirm({
+      title: 'Void Receipt',
+      message: 'Are you sure you want to void/cancel this receipt? This action cannot be undone.',
+      itemName: doc?.documentNumber || id,
+      itemType: 'Receipt',
+      confirmText: 'Void Receipt',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
     setIsActionLoading(true);
     try {
       await api.cancelReceipt(id);

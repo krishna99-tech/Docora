@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { PDFViewerModal } from '@/components/pdf/pdf-viewer-modal';
 import { TablePagination } from '@/components/ui/table-pagination';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function InvoicesPage() {
   const [search, setSearch] = useState('');
@@ -32,14 +33,24 @@ export default function InvoicesPage() {
       }),
   });
 
+  const confirm = useConfirm();
+
   const handleOpenPreview = (id: string, num: string, status: string) => {
     setPreviewDocId(id);
     setPreviewDocNumber(num);
     setPreviewIsDraft(status === 'draft');
   };
 
-  const handleFinalize = async (id: string) => {
-    if (!confirm('Are you sure you want to finalize this invoice? It will become an issued official claim.')) return;
+  const handleFinalize = async (id: string, num?: string) => {
+    const ok = await confirm({
+      title: 'Finalize & Issue Invoice',
+      message: 'Are you sure you want to finalize this invoice? It will become an issued official claim and lock further modifications.',
+      itemName: num,
+      itemType: 'Invoice',
+      confirmText: 'Finalize Invoice',
+      variant: 'info',
+    });
+    if (!ok) return;
     try {
       await api.finalizeInvoice(id);
       refetch();
@@ -48,8 +59,16 @@ export default function InvoicesPage() {
     }
   };
 
-  const handleCancel = async (id: string) => {
-    if (!confirm('Are you sure you want to cancel this invoice?')) return;
+  const handleCancel = async (id: string, num?: string) => {
+    const ok = await confirm({
+      title: 'Void / Cancel Invoice',
+      message: 'Are you sure you want to cancel and void this invoice? It will be marked as cancelled in the ledger.',
+      itemName: num,
+      itemType: 'Invoice',
+      confirmText: 'Void Invoice',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await api.cancelInvoice(id);
       refetch();
@@ -186,7 +205,7 @@ export default function InvoicesPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleFinalize(doc.id)}
+                              onClick={() => handleFinalize(doc.id, doc.documentNumber)}
                               title="Finalize Invoice"
                             >
                               <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
@@ -196,7 +215,7 @@ export default function InvoicesPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleCancel(doc.id)}
+                              onClick={() => handleCancel(doc.id, doc.documentNumber)}
                               title="Cancel Invoice"
                             >
                               <XCircle className="w-3.5 h-3.5 text-rose-500" />

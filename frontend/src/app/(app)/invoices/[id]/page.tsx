@@ -14,11 +14,13 @@ import { formatDate } from '@/lib/utils';
 import { PDFViewerModal } from '@/components/pdf/pdf-viewer-modal';
 import { DocumentPreviewContainer } from '@/components/preview/document-preview-container';
 import { InvoicePreview } from '@/components/preview/invoice-preview';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function InvoiceDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
+  const confirm = useConfirm();
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -35,7 +37,16 @@ export default function InvoiceDetailPage() {
   });
 
   const handleFinalize = async () => {
-    if (!confirm('Are you sure you want to finalize & issue this invoice? This will lock the document.')) return;
+    const ok = await confirm({
+      title: 'Issue & Finalize Invoice',
+      message: 'Are you sure you want to finalize and issue this invoice? This will lock the document permanently.',
+      itemName: doc?.documentNumber || id,
+      itemType: 'Invoice',
+      confirmText: 'Issue Invoice',
+      variant: 'primary',
+    });
+    if (!ok) return;
+
     setIsActionLoading(true);
     try {
       await api.finalizeInvoice(id);
@@ -48,7 +59,16 @@ export default function InvoiceDetailPage() {
   };
 
   const handleCancel = async () => {
-    if (!confirm('Are you sure you want to cancel this invoice?')) return;
+    const ok = await confirm({
+      title: 'Void Invoice',
+      message: 'Are you sure you want to void/cancel this invoice? This action cannot be undone.',
+      itemName: doc?.documentNumber || id,
+      itemType: 'Invoice',
+      confirmText: 'Void Invoice',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
     setIsActionLoading(true);
     try {
       await api.cancelInvoice(id);

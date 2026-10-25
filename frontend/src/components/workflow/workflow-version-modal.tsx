@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 import { WorkflowVersion } from '@/types';
 import { History, RotateCcw, Check, Calendar } from 'lucide-react';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface VersionModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export function WorkflowVersionModal({
   const [versions, setVersions] = useState<WorkflowVersion[]>([]);
   const [loading, setLoading] = useState(false);
   const [restoringVersion, setRestoringVersion] = useState<number | null>(null);
+  const confirm = useConfirm();
 
   useEffect(() => {
     if (isOpen && workflowId) {
@@ -37,14 +39,20 @@ export function WorkflowVersionModal({
       if (Array.isArray(res)) {
         setVersions(res);
       }
-    } catch {}
+    } catch { }
     setLoading(false);
   };
 
   const handleRestore = async (vNum: number) => {
-    if (!confirm(`Are you sure you want to restore version ${vNum}? Current draft will be updated.`)) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Restore Workflow Version',
+      message: `Are you sure you want to restore version ${vNum}? The current draft will be updated with the contents of this version.`,
+      itemName: `Version ${vNum}`,
+      itemType: 'Workflow Version',
+      confirmText: 'Restore Version',
+      variant: 'warning',
+    });
+    if (!ok) return;
     setRestoringVersion(vNum);
     try {
       await api.restoreWorkflowVersion(workflowId, vNum);

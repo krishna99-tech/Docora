@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { Header } from '@/components/layout/header';
 import { TablePagination } from '@/components/ui/table-pagination';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function SharedDocumentsPage() {
   const [links, setLinks] = useState<any[]>([]);
@@ -116,11 +117,21 @@ export default function SharedDocumentsPage() {
     }
   };
 
-  const handleRevoke = async (id: string) => {
-    if (!confirm('Are you sure you want to revoke this sharing link immediately?')) return;
+  const confirm = useConfirm();
+
+  const handleRevoke = async (id: string, docTitle?: string) => {
+    const ok = await confirm({
+      title: 'Revoke Shared Link',
+      message: 'Are you sure you want to revoke this sharing link? Anyone with the URL will immediately lose access to this document.',
+      itemName: docTitle,
+      itemType: 'Shared Link',
+      confirmText: 'Revoke Access',
+      variant: 'warning',
+    });
+    if (!ok) return;
 
     try {
-      const res = await fetch(`/api/v1/shared-links/${id}/revoke`, { method: 'POST' });
+      const res = await fetch(`/api/v1/shared-links/${id}/revoke`, { method: 'POST', credentials: 'include' });
       if (res.ok) {
         fetchLinks();
       }
@@ -237,7 +248,7 @@ export default function SharedDocumentsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleRevoke(link.id)}
+                              onClick={() => handleRevoke(link.id, link.documentTitle || 'Shared Document')}
                               className="text-xs h-7 text-red-400 hover:text-red-300 border-red-900/40"
                             >
                               <Ban className="w-3 h-3 mr-1" /> Revoke

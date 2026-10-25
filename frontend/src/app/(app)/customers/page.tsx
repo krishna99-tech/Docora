@@ -12,12 +12,14 @@ import { api } from '@/lib/api';
 import { Customer } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { TablePagination } from '@/components/ui/table-pagination';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function CustomersPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const confirm = useConfirm();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -71,8 +73,16 @@ export default function CustomersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this customer record?')) return;
+  const handleDelete = async (id: string, customerName?: string) => {
+    const ok = await confirm({
+      title: 'Delete Customer',
+      message: 'Are you sure you want to permanently delete this customer profile? Associated existing documents will remain intact.',
+      itemName: customerName,
+      itemType: 'Customer Record',
+      confirmText: 'Delete Customer',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await api.deleteCustomer(id);
       refetch();
@@ -163,7 +173,7 @@ export default function CustomersPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDelete(c.id)}
+                            onClick={() => handleDelete(c.id, c.name)}
                             title="Delete Customer"
                             className="text-red-500 hover:text-red-600"
                           >
@@ -223,7 +233,7 @@ export default function CustomersPage() {
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs text-red-500 hover:text-red-600"
-                      onClick={() => handleDelete(c.id)}
+                      onClick={() => handleDelete(c.id, c.name)}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

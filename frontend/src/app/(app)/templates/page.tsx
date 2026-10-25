@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { api } from '@/lib/api';
 import { Template } from '@/types';
 
@@ -111,6 +112,7 @@ const MARKETPLACE_PRESETS = [
 ];
 
 export default function TemplatesPage() {
+  const confirm = useConfirm();
   const [viewMode, setViewMode] = useState<'workspace' | 'marketplace'>('workspace');
   const [docTypeFilter, setDocTypeFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -149,8 +151,16 @@ export default function TemplatesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this custom template?')) return;
+  const handleDelete = async (id: string, name?: string) => {
+    const ok = await confirm({
+      title: 'Delete Template',
+      message: 'Are you sure you want to permanently delete this custom template? Existing documents using this template version will remain intact.',
+      itemName: name,
+      itemType: 'Custom Template',
+      confirmText: 'Delete Template',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await api.deleteTemplate(id);
       refetch();
@@ -406,7 +416,7 @@ export default function TemplatesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDelete(tmpl.id)}
+                            onClick={() => handleDelete(tmpl.id, tmpl.name)}
                             title="Delete Custom Template"
                             className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-500/10"
                           >

@@ -12,6 +12,7 @@ import { Modal } from '@/components/ui/modal';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { PDFViewerModal } from '@/components/pdf/pdf-viewer-modal';
 import { TablePagination } from '@/components/ui/table-pagination';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Document, DocumentFolder } from '@/types';
 
 export default function DocumentLibraryPage() {
@@ -25,6 +26,7 @@ export default function DocumentLibraryPage() {
   const [previewDocId, setPreviewDocId] = useState<string | null>(null);
   const [previewDocNumber, setPreviewDocNumber] = useState<string>('');
   const [selectedMetaDoc, setSelectedMetaDoc] = useState<Document | null>(null);
+  const confirm = useConfirm();
 
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -71,8 +73,16 @@ export default function DocumentLibraryPage() {
     api.downloadDocument(id, `${num}.pdf`);
   };
 
-  const handleDeleteDraft = async (id: string) => {
-    if (!confirm('Are you sure you want to permanently delete this draft?')) return;
+  const handleDeleteDraft = async (id: string, docNumber?: string) => {
+    const ok = await confirm({
+      title: 'Delete Document Draft',
+      message: 'Are you sure you want to permanently delete this document draft? This action cannot be reversed.',
+      itemName: docNumber,
+      itemType: 'Document Draft',
+      confirmText: 'Delete Draft',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await api.deleteDocument(id);
       refetch();
@@ -312,7 +322,7 @@ export default function DocumentLibraryPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteDraft(doc.id)}
+                              onClick={() => handleDeleteDraft(doc.id, doc.documentNumber)}
                               title="Delete Draft"
                               className="text-red-500 hover:text-red-600"
                             >
