@@ -155,6 +155,28 @@ func (h *WorkflowHandler) Duplicate(c *gin.Context) {
 	c.JSON(http.StatusCreated, wf)
 }
 
+func (h *WorkflowHandler) ToggleStatus(c *gin.Context) {
+	wsID := h.getWorkspaceID(c)
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workflow id"})
+		return
+	}
+
+	var req struct {
+		IsActive *bool `json:"isActive"`
+	}
+	_ = c.ShouldBindJSON(&req)
+
+	wf, err := h.wfService.ToggleWorkflowActive(c.Request.Context(), id, wsID, req.IsActive)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, wf)
+}
+
 // -----------------------------------------------------------------------------
 // EXECUTION & TESTING
 // -----------------------------------------------------------------------------

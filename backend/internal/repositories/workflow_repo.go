@@ -219,6 +219,18 @@ func (r *WorkflowRepository) DeleteWorkflow(ctx context.Context, id, workspaceID
 	return nil
 }
 
+func (r *WorkflowRepository) SetWorkflowActive(ctx context.Context, id, workspaceID uuid.UUID, active bool) error {
+	query := `UPDATE workflows SET is_active = $1, updated_at = NOW() WHERE id = $2 AND workspace_id = $3`
+	res, err := r.db.Pool.Exec(ctx, query, active, id, workspaceID)
+	if err != nil {
+		return err
+	}
+	if res.RowsAffected() == 0 {
+		return ErrWorkflowNotFound
+	}
+	return nil
+}
+
 // -----------------------------------------------------------------------------
 // WORKFLOW VERSIONS
 // -----------------------------------------------------------------------------

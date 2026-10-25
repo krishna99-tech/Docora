@@ -27,6 +27,7 @@ import { WorkflowDryRunModal } from '@/components/workflow/workflow-dryrun-modal
 import { WorkflowScheduleModal } from '@/components/workflow/workflow-schedule-modal';
 import { WorkflowBulkModal } from '@/components/workflow/workflow-bulk-modal';
 import { WorkflowVersionModal } from '@/components/workflow/workflow-version-modal';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function WorkflowDetailPage({
   params,
@@ -35,6 +36,7 @@ export default function WorkflowDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const confirm = useConfirm();
 
   const [workflow, setWorkflow] = useState<Workflow | null>(null);
   const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
@@ -72,8 +74,31 @@ export default function WorkflowDetailPage({
     }
   };
 
+  const handleToggleActive = async () => {
+    if (!workflow) return;
+    try {
+      const updated = await api.toggleWorkflow(workflow.id);
+      setWorkflow((prev) => (prev ? { ...prev, isActive: updated.isActive } : null));
+      setFeedbackMsg(`Workflow is now ${updated.isActive ? 'Active' : 'Draft'}.`);
+    } catch (err: any) {
+      setFeedbackMsg(`Failed to toggle status: ${err.message}`);
+    }
+  };
+
   const handleRunNow = async () => {
     if (!workflow) return;
+    if (!workflow.isActive) {
+      const ok = await confirm({
+        title: 'Activate & Run Workflow?',
+        message: `"${workflow.name}" is currently marked as Draft (Inactive). Would you like to activate it and execute the workflow?`,
+        itemName: workflow.name,
+        itemType: 'Workflow',
+        confirmText: 'Activate & Run',
+        variant: 'primary',
+      });
+      if (!ok) return;
+    }
+
     setTriggering(true);
     setFeedbackMsg(null);
     try {
@@ -133,6 +158,24 @@ export default function WorkflowDetailPage({
           icon: Play,
         }}
       >
+        <button
+          type="button"
+          onClick={handleToggleActive}
+          title={`Click to set as ${workflow.isActive ? 'Draft (Inactive)' : 'Active'}`}
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all hover:scale-105 cursor-pointer mr-1 ${
+            workflow.isActive
+              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+              : 'border-neutral-500/30 bg-neutral-500/10 text-neutral-400 hover:bg-neutral-500/20'
+          }`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full ${
+              workflow.isActive ? 'bg-emerald-400 animate-pulse' : 'bg-neutral-500'
+            }`}
+          />
+          {workflow.isActive ? 'Active' : 'Draft'}
+        </button>
+
         <Button
           variant="outline"
           size="sm"

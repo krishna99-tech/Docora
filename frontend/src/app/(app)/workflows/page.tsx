@@ -112,7 +112,29 @@ export default function WorkflowsDashboardPage() {
     setLoading(false);
   };
 
+  const handleToggleActive = async (wf: Workflow) => {
+    try {
+      const updated = await api.toggleWorkflow(wf.id);
+      setWorkflows((prev) => prev.map((w) => (w.id === wf.id ? { ...w, isActive: updated.isActive } : w)));
+      setFeedbackMsg({ text: `Workflow "${wf.name}" is now ${updated.isActive ? 'Active' : 'Draft'}.` });
+    } catch (err: any) {
+      setFeedbackMsg({ text: `Failed to toggle status: ${err.message}`, error: true });
+    }
+  };
+
   const handleQuickRun = async (wf: Workflow) => {
+    if (!wf.isActive) {
+      const ok = await confirm({
+        title: 'Activate & Run Workflow?',
+        message: `"${wf.name}" is currently marked as Draft (Inactive). Would you like to activate it and execute the workflow?`,
+        itemName: wf.name,
+        itemType: 'Workflow',
+        confirmText: 'Activate & Run',
+        variant: 'primary',
+      });
+      if (!ok) return;
+    }
+
     setTriggeringId(wf.id);
     setFeedbackMsg(null);
     try {
@@ -524,15 +546,23 @@ export default function WorkflowsDashboardPage() {
                     {/* Actions Bar */}
                     <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1">
-                        {wf.isActive ? (
-                          <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Active
-                          </span>
-                        ) : (
-                          <span className="text-[11px] text-neutral-500 font-semibold flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-600" /> Draft
-                          </span>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleActive(wf)}
+                          title={`Click to set as ${wf.isActive ? 'Draft (Inactive)' : 'Active'}`}
+                          className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border transition-all hover:scale-105 cursor-pointer ${
+                            wf.isActive
+                              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                              : 'border-neutral-500/30 bg-neutral-500/10 text-neutral-400 hover:bg-neutral-500/20'
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              wf.isActive ? 'bg-emerald-400 animate-pulse' : 'bg-neutral-500'
+                            }`}
+                          />
+                          {wf.isActive ? 'Active' : 'Draft'}
+                        </button>
                       </div>
 
                       <div className="flex items-center gap-1.5">

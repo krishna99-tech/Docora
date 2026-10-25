@@ -138,6 +138,24 @@ func (s *WorkflowService) DeleteWorkflow(ctx context.Context, id, workspaceID uu
 	return s.workflowRepo.DeleteWorkflow(ctx, id, workspaceID)
 }
 
+func (s *WorkflowService) ToggleWorkflowActive(ctx context.Context, id, workspaceID uuid.UUID, desiredState *bool) (*models.Workflow, error) {
+	wf, err := s.workflowRepo.GetWorkflowByID(ctx, id, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+
+	newState := !wf.IsActive
+	if desiredState != nil {
+		newState = *desiredState
+	}
+
+	if err := s.workflowRepo.SetWorkflowActive(ctx, id, workspaceID, newState); err != nil {
+		return nil, err
+	}
+	wf.IsActive = newState
+	return wf, nil
+}
+
 func (s *WorkflowService) ListWorkflows(ctx context.Context, workspaceID uuid.UUID, search, category, status string) ([]models.Workflow, error) {
 	return s.workflowRepo.ListWorkflows(ctx, workspaceID, search, category, status)
 }
@@ -348,7 +366,12 @@ func (s *WorkflowService) TriggerWorkflow(
 		return nil, err
 	}
 	if !wf.IsActive {
-		return nil, errors.New("cannot execute an inactive workflow")
+		if triggerSource == models.TriggerManual || triggerSource == "manual" || triggerSource == "dry_run" || triggerSource == "" {
+			wf.IsActive = true
+			_ = s.workflowRepo.SetWorkflowActive(ctx, workflowID, workspaceID, true)
+		} else {
+			return nil, errors.New("cannot execute an inactive workflow")
+		}
 	}
 
 	if initialContext == nil {

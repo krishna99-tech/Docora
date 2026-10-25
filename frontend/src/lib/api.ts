@@ -583,6 +583,13 @@ class ApiClient {
     });
   }
 
+  async toggleWorkflow(id: string, isActive?: boolean): Promise<Workflow> {
+    return this.request<Workflow>(`/workflows/${id}/toggle`, {
+      method: 'POST',
+      body: JSON.stringify(isActive !== undefined ? { isActive } : {}),
+    });
+  }
+
   async triggerWorkflow(id: string, context?: Record<string, any>, documentId?: string): Promise<WorkflowExecution> {
     return this.request<WorkflowExecution>(`/workflows/${id}/trigger`, {
       method: 'POST',

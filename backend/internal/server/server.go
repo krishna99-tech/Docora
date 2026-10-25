@@ -251,6 +251,7 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			protected.PUT("/workflows/:id", workflowHandler.Update)
 			protected.DELETE("/workflows/:id", workflowHandler.Delete)
 			protected.POST("/workflows/:id/duplicate", workflowHandler.Duplicate)
+			protected.POST("/workflows/:id/toggle", workflowHandler.ToggleStatus)
 			protected.POST("/workflows/:id/trigger", workflowHandler.Trigger)
 			protected.POST("/workflows/:id/test", workflowHandler.DryRun)
 			protected.POST("/workflows/:id/bulk", workflowHandler.Bulk)
