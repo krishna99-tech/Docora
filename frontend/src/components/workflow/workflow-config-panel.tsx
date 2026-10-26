@@ -20,13 +20,7 @@ export function WorkflowConfigPanel({
   onClose,
 }: ConfigPanelProps) {
   if (!node) {
-    return (
-      <div className="w-80 h-full border-l border-[var(--border)] bg-[var(--card)] p-6 flex flex-col items-center justify-center text-center text-xs text-[var(--muted-foreground)]">
-        <Settings2 className="w-8 h-8 opacity-40 mb-2" />
-        <p className="font-semibold text-[var(--foreground)]">No Step Selected</p>
-        <p className="mt-1">Click any node on the canvas to configure its settings and data mappings.</p>
-      </div>
-    );
+    return null;
   }
 
   const data = node.data || {};
@@ -49,7 +43,7 @@ export function WorkflowConfigPanel({
   };
 
   return (
-    <div className="w-80 h-full border-l border-[var(--border)] bg-[var(--card)] flex flex-col text-xs select-none">
+    <div className="w-80 shrink-0 h-full border-l border-[var(--border)] bg-[var(--card)] flex flex-col text-xs select-none shadow-xl z-20 animate-in slide-in-from-right duration-150">
       {/* Header */}
       <div className="p-3.5 border-b border-[var(--border)] flex items-center justify-between">
         <div className="flex items-center gap-2">

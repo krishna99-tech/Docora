@@ -28,10 +28,12 @@ import {
   Code2,
   BarChart3,
   UserCheck,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth, useTheme, useNavigation } from '@/app/providers';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { DocAutomateLogo } from '@/components/ui/doc-automate-logo';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -43,6 +45,7 @@ const navItems = [
   { label: 'Bulk Generation', href: '/bulk', icon: Layers },
   { label: 'Developer / API', href: '/developer', icon: Code2 },
   { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { label: 'Feedback', href: '/feedback', icon: MessageSquare },
   { label: 'Workspace Settings', href: '/settings', icon: Settings },
   { label: 'User Profile', href: '/settings/profile', icon: UserCheck },
 ];
@@ -79,17 +82,11 @@ export function Sidebar() {
       <div>
         {/* Brand Header */}
         <div className="h-16 flex items-center justify-between px-4 sm:px-5 border-b border-[var(--sidebar-border)]">
-          <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center font-black text-sm tracking-tighter shrink-0">
-              D
-            </div>
-            {(!isTabletCollapsed || isMobile) && (
-              <div className="truncate">
-                <div className="font-extrabold text-sm tracking-tight text-[var(--foreground)]">DOCORA</div>
-                <div className="text-[10px] text-[var(--muted-foreground)] uppercase tracking-wider font-semibold">
-                  Receipt & PDF Studio
-                </div>
-              </div>
+          <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden" title="DocAutomate">
+            {isTabletCollapsed && !isMobile ? (
+              <DocAutomateLogo variant="icon" size={32} />
+            ) : (
+              <DocAutomateLogo variant="horizontal" size="sm" showTagline={true} />
             )}
           </Link>
 
@@ -117,7 +114,7 @@ export function Sidebar() {
         <div className="p-3">
           <Link href="/receipts/new" onClick={() => { if (isMobile) closeMobile(); }}>
             <Button
-              variant="default"
+              variant="gradient"
               size="sm"
               className={cn(
                 'w-full font-semibold transition-all min-h-[40px]',
@@ -143,14 +140,14 @@ export function Sidebar() {
                 title={item.label}
                 onClick={() => { if (isMobile) closeMobile(); }}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 sm:py-2 text-xs font-semibold rounded-md transition-colors min-h-[40px] sm:min-h-0',
+                  'flex items-center gap-3 px-3 py-2.5 sm:py-2 text-xs font-semibold rounded-md transition-all min-h-[40px] sm:min-h-0',
                   isTabletCollapsed && !isMobile ? 'justify-center px-2' : '',
                   isActive
-                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
-                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)]'
+                    ? 'bg-[var(--brand-subtle)] text-[var(--brand-from)] border border-[var(--brand-border)] shadow-xs'
+                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] border border-transparent'
                 )}
               >
-                <Icon className="w-4 h-4 shrink-0" />
+                <Icon className={cn('w-4 h-4 shrink-0 transition-colors', isActive ? 'text-[var(--brand-from)]' : '')} />
                 {(!isTabletCollapsed || isMobile) && <span className="truncate">{item.label}</span>}
               </Link>
             );

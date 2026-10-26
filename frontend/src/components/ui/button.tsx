@@ -2,17 +2,19 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'secondary' | 'outline' | 'ghost' | 'danger';
+  variant?: 'default' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'gradient' | 'brand';
   size?: 'sm' | 'md' | 'lg' | 'icon';
   isLoading?: boolean;
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'md', isLoading = false, children, disabled, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
+    const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--brand-ring)] focus:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
 
     const variantStyles = {
       default: 'bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 active:scale-[0.99] shadow-xs',
+      gradient: 'bg-gradient-to-r from-[var(--brand-from)] to-[var(--brand-to)] text-white hover:opacity-95 shadow-sm hover:shadow-[var(--brand-glow)] active:scale-[0.99] border-0 font-semibold',
+      brand: 'bg-[var(--brand-subtle)] text-[var(--brand-from)] border border-[var(--brand-border)] hover:bg-[var(--brand-from)] hover:text-white transition-all',
       secondary: 'bg-[var(--secondary)] text-[var(--secondary-foreground)] hover:bg-[var(--surface-hover)] border border-[var(--border)]',
       outline: 'bg-transparent text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--surface-hover)]',
       ghost: 'bg-transparent text-[var(--foreground)] hover:bg-[var(--surface-hover)]',

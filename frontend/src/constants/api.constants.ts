@@ -1,0 +1,107 @@
+export const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'docora_access_token',
+  REFRESH_TOKEN: 'docora_refresh_token',
+  USER: 'docora_user',
+  ACTIVE_WORKSPACE_ID: 'docora_active_workspace_id',
+  THEME_PALETTE: 'docora_palette_theme',
+} as const;
+
+export const API_CONFIG = {
+  BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v1',
+  DEFAULT_TIMEOUT_MS: 30000,
+  DEFAULT_PAGE_SIZE: 10,
+  MAX_PAGE_SIZE: 100,
+} as const;
+
+export const API_ROUTES = {
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    LOGOUT: '/auth/logout',
+    REFRESH: '/auth/refresh',
+    ME: '/auth/me',
+    PROFILE: '/auth/profile',
+    CHANGE_PASSWORD: '/auth/change-password',
+  },
+  DASHBOARD: {
+    STATS: '/dashboard/stats',
+    RECENT_DOCUMENTS: '/dashboard/recent-documents',
+  },
+  RECEIPTS: {
+    BASE: '/receipts',
+    BY_ID: (id: string) => `/receipts/${id}`,
+    FINALIZE: (id: string) => `/receipts/${id}/finalize`,
+    CANCEL: (id: string) => `/receipts/${id}/cancel`,
+  },
+  INVOICES: {
+    BASE: '/invoices',
+    BY_ID: (id: string) => `/invoices/${id}`,
+    FINALIZE: (id: string) => `/invoices/${id}/finalize`,
+    CANCEL: (id: string) => `/invoices/${id}/cancel`,
+  },
+  DOCUMENTS: {
+    BASE: '/documents',
+    BY_ID: (id: string) => `/documents/${id}`,
+    PREVIEW: (id: string) => `/documents/${id}/preview`,
+    DOWNLOAD: (id: string) => `/documents/${id}/download`,
+    GENERAL_PDF: '/documents/general-pdf',
+  },
+  FOLDERS: {
+    BASE: '/folders',
+    BY_ID: (id: string) => `/folders/${id}`,
+    MOVE: '/folders/move',
+    TAG: '/folders/tag',
+    ARCHIVE: '/folders/archive',
+    COMPLIANCE: '/folders/compliance',
+  },
+  WORKFLOWS: {
+    BASE: '/workflows',
+    BY_ID: (id: string) => `/workflows/${id}`,
+    DUPLICATE: (id: string) => `/workflows/${id}/duplicate`,
+    TOGGLE: (id: string) => `/workflows/${id}/toggle`,
+    TRIGGER: (id: string) => `/workflows/${id}/trigger`,
+    TEST: (id: string) => `/workflows/${id}/test`,
+    DRY_RUN: '/workflows/dry-run',
+    BULK: (id: string) => `/workflows/${id}/bulk`,
+    VERSIONS: (id: string) => `/workflows/${id}/versions`,
+    RESTORE_VERSION: (id: string, version: number) => `/workflows/${id}/versions/${version}/restore`,
+    EXECUTIONS: '/workflows/executions',
+    EXECUTION_BY_ID: (id: string) => `/workflows/executions/${id}`,
+    RETRY_EXECUTION: (id: string) => `/workflows/executions/${id}/retry`,
+    CANCEL_EXECUTION: (id: string) => `/workflows/executions/${id}/cancel`,
+    APPROVALS: '/workflows/approvals',
+    SCHEDULE: (id: string) => `/workflows/${id}/schedule`,
+    ANALYTICS: '/workflows/analytics',
+    TEMPLATES: '/workflows/templates',
+    IMPORT: '/workflows/import',
+    EXPORT: (id: string) => `/workflows/${id}/export`,
+  },
+  CUSTOMERS: {
+    BASE: '/customers',
+    BY_ID: (id: string) => `/customers/${id}`,
+  },
+  TEMPLATES: {
+    BASE: '/templates',
+    BY_ID: (id: string) => `/templates/${id}`,
+    DUPLICATE: (id: string) => `/templates/${id}/duplicate`,
+  },
+  SETTINGS: {
+    BUSINESS_PROFILE: '/settings/business-profile',
+    WORKSPACES: '/workspaces',
+    BILLING: '/billing',
+  },
+  DEVELOPER: {
+    API_KEYS: '/developer/api-keys',
+    WEBHOOKS: '/developer/webhooks',
+  },
+  PDF_TOOLS: {
+    MERGE: '/pdf-tools/merge',
+    COMPRESS: '/pdf-tools/compress',
+    ROTATE: '/pdf-tools/rotate',
+    WATERMARK: '/pdf-tools/watermark',
+    PAGE_NUMBERS: '/pdf-tools/page-numbers',
+    IMAGES_TO_PDF: '/pdf-tools/images-to-pdf',
+    METADATA: '/pdf-tools/metadata',
+    JOBS: '/pdf-tools/jobs',
+  },
+} as const;

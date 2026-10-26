@@ -86,6 +86,8 @@ export default function DashboardPage() {
       icon: FileText,
       description: `+${stats?.documentsThisMonth ?? 0} in current period`,
       badge: 'All Artifacts',
+      topLine: 'bg-gradient-to-r from-blue-500 to-cyan-400',
+      iconBox: 'bg-sky-500/10 text-sky-500 border-sky-500/20',
     },
     {
       label: 'Verified Revenue',
@@ -93,6 +95,8 @@ export default function DashboardPage() {
       icon: TrendingUp,
       description: `Pending: ${formatCurrency(stats?.totalInvoicePendingMinor || 0)}`,
       badge: 'Settled',
+      topLine: 'bg-gradient-to-r from-emerald-500 to-teal-400',
+      iconBox: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
     },
     {
       label: 'Workflow Executions',
@@ -100,6 +104,8 @@ export default function DashboardPage() {
       icon: Workflow,
       description: `${successfulExecs} passed / ${failedExecs} failed (${successRate}%)`,
       badge: 'Automations',
+      topLine: 'bg-gradient-to-r from-purple-500 to-indigo-500',
+      iconBox: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
     },
     {
       label: 'Active Pipelines',
@@ -107,6 +113,8 @@ export default function DashboardPage() {
       icon: Activity,
       description: 'Scheduled daemon triggers active',
       badge: 'Cron Ready',
+      topLine: 'bg-gradient-to-r from-orange-500 to-rose-400',
+      iconBox: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
     },
   ];
 
@@ -128,31 +136,31 @@ export default function DashboardPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/receipts/new">
-              <Button size="sm" variant="default" className="text-xs font-semibold">
+              <Button size="sm" variant="gradient" className="text-xs font-semibold">
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 New Receipt
               </Button>
             </Link>
             <Link href="/invoices/new">
-              <Button size="sm" variant="secondary" className="text-xs font-semibold">
+              <Button size="sm" variant="secondary" className="text-xs font-semibold hover:border-[var(--brand-from)] transition-colors">
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 New Invoice
               </Button>
             </Link>
             <Link href="/studio">
-              <Button size="sm" variant="outline" className="text-xs font-semibold">
+              <Button size="sm" variant="outline" className="text-xs font-semibold hover:border-[var(--brand-from)] transition-colors">
                 <Sparkles className="w-3.5 h-3.5 mr-1" />
                 Document Studio
               </Button>
             </Link>
             <Link href="/workflows/new">
-              <Button size="sm" variant="outline" className="text-xs font-semibold">
+              <Button size="sm" variant="outline" className="text-xs font-semibold hover:border-[var(--brand-from)] transition-colors">
                 <Workflow className="w-3.5 h-3.5 mr-1" />
                 New Workflow
               </Button>
             </Link>
             <Link href="/templates">
-              <Button size="sm" variant="outline" className="text-xs font-semibold">
+              <Button size="sm" variant="outline" className="text-xs font-semibold hover:border-[var(--brand-from)] transition-colors">
                 <Palette className="w-3.5 h-3.5 mr-1" />
                 Templates
               </Button>
@@ -165,12 +173,15 @@ export default function DashboardPage() {
           {statCards.map((card, idx) => {
             const Icon = card.icon;
             return (
-              <Card key={idx} className="p-4 sm:p-5 border-[var(--border)] space-y-2 relative overflow-hidden">
+              <Card key={idx} className="p-4 sm:p-5 border-[var(--border)] space-y-2 relative overflow-hidden group hover:shadow-md transition-all">
+                {/* Colored Top Accent Line */}
+                <div className={`absolute top-0 left-0 right-0 h-1 ${card.topLine}`} />
+
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
                     {card.label}
                   </span>
-                  <div className="w-8 h-8 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--foreground)]">
+                  <div className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${card.iconBox}`}>
                     <Icon className="w-4 h-4" />
                   </div>
                 </div>

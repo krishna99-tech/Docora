@@ -15,17 +15,22 @@ import {
   Key,
   ShieldCheck,
   Check,
+  Palette,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/app/providers';
+import { useAuth, useTheme } from '@/app/providers';
 import { formatDate } from '@/lib/utils';
 import { api } from '@/lib/api';
+import { COLOR_PALETTES } from '@/types/palette';
 
 export default function UserProfilePage() {
   const { user, updateUserProfile, isLoading } = useAuth();
+  const { theme, toggleTheme, colorPalette, setColorPalette } = useTheme();
 
   const [name, setName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -208,12 +213,89 @@ export default function UserProfilePage() {
             </div>
 
             <div className="flex items-center justify-start gap-3 pt-2">
-              <Button type="submit" variant="default" isLoading={isSaving} className="text-xs h-9">
+              <Button type="submit" variant="gradient" isLoading={isSaving} className="text-xs h-9">
                 <Save className="w-3.5 h-3.5 mr-1" />
                 Save Changes
               </Button>
             </div>
           </form>
+        </Card>
+
+        {/* Figma Color Harmonies & Appearance Settings */}
+        <Card className="p-5 sm:p-6 space-y-4">
+          <CardHeader className="p-0 pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-[var(--brand-subtle)] text-[var(--brand-from)] border border-[var(--brand-border)]">
+                  <Palette className="w-4 h-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm sm:text-base font-bold">Figma Color Palette Generator Themes</CardTitle>
+                  <CardDescription className="text-xs">
+                    Curated color harmonies designed according to professional color wheel theory
+                  </CardDescription>
+                </div>
+              </div>
+
+              {/* Quick Dark/Light Toggle */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+                title="Toggle Light/Dark Theme"
+              >
+                {theme === 'light' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline capitalize">{theme} Mode</span>
+              </button>
+            </div>
+          </CardHeader>
+
+          {/* Palette Selection Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+            {COLOR_PALETTES.map((p) => {
+              const isSelected = p.id === colorPalette;
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => setColorPalette(p.id)}
+                  className={`p-3.5 rounded-xl border transition-all cursor-pointer relative flex flex-col justify-between gap-3 ${
+                    isSelected
+                      ? 'border-[var(--brand-from)] bg-[var(--brand-subtle)] shadow-sm'
+                      : 'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)]'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-5 h-5 rounded-full border border-black/10 shrink-0 shadow-xs"
+                        style={{ background: p.previewGradient }}
+                      />
+                      <span className="text-xs font-bold text-[var(--foreground)]">{p.name}</span>
+                    </div>
+                    {isSelected ? (
+                      <span className="p-1 rounded-full bg-[var(--brand-from)] text-white">
+                        <Check className="w-3 h-3" />
+                      </span>
+                    ) : (
+                      <span className="text-[9px] uppercase font-mono tracking-wider text-[var(--muted-foreground)] bg-[var(--surface-secondary)] px-1.5 py-0.5 rounded border border-[var(--border)]">
+                        {p.category}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] text-[var(--muted-foreground)] leading-snug">
+                    {p.description}
+                  </p>
+
+                  <div className="flex items-center gap-2 pt-1 border-t border-[var(--border)]/60 text-[10px] font-mono text-[var(--muted-foreground)]">
+                    <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: p.primaryHex }} />
+                    <span>Primary: {p.primaryHex}</span>
+                    <span className="ml-auto font-medium">{p.secondaryHex}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </Card>
 
         {/* Workspace & Security Overview Card */}

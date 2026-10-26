@@ -15,6 +15,7 @@ import {
   KeyRound,
   MailCheck,
 } from 'lucide-react';
+import { DocAutomateLogo } from '@/components/ui/doc-automate-logo';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -151,16 +152,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Brand Header */}
         <div className="relative z-10 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center font-black text-sm tracking-tight shadow-md group-hover:bg-neutral-200 transition-colors">
-              D
-            </div>
-            <div>
-              <div className="font-extrabold text-base tracking-tight text-white">DOCORA</div>
-              <div className="text-[10px] text-neutral-400 uppercase tracking-widest font-semibold">
-                Document Operations
-              </div>
-            </div>
+          <Link href="/" className="flex items-center gap-3 group" title="DocAutomate">
+            <DocAutomateLogo variant="horizontal" size="sm" theme="dark" showTagline={true} />
           </Link>
 
           <span className="text-xs font-mono text-neutral-400 bg-neutral-900 border border-neutral-800 px-2.5 py-1 rounded-full">
@@ -228,7 +221,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Bottom Trust Line */}
         <div className="relative z-10 flex items-center justify-between text-xs text-neutral-400 border-t border-neutral-800/80 pt-6">
-          <span>&copy; 2026 Docora Platform</span>
+          <span>&copy; 2026 DocAutomate Platform</span>
           <span className="font-mono text-[11px]">Strict Workspace Isolation</span>
         </div>
       </div>
@@ -237,11 +230,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="flex flex-col justify-between p-6 sm:p-12 lg:p-16">
         {/* Mobile-only compact logo */}
         <div className="flex lg:hidden items-center justify-between pb-6">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center font-black text-sm">
-              D
-            </div>
-            <span className="font-bold text-sm tracking-tight text-[var(--foreground)]">DOCORA</span>
+          <Link href="/" className="flex items-center gap-2.5" title="DocAutomate">
+            <DocAutomateLogo variant="horizontal" size="sm" showTagline={false} />
           </Link>
         </div>
 

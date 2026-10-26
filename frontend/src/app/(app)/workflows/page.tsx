@@ -566,8 +566,9 @@ export default function WorkflowsDashboardPage() {
                     </div>
 
                     {/* Actions Bar */}
-                    <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1">
+                    <div className="pt-3 border-t border-[var(--border)] space-y-2.5">
+                      {/* Row 1: Status & Primary Actions */}
+                      <div className="flex items-center justify-between gap-2">
                         <button
                           type="button"
                           onClick={() => handleToggleActive(wf)}
@@ -585,62 +586,85 @@ export default function WorkflowsDashboardPage() {
                           />
                           {wf.isActive ? 'Active' : 'Draft'}
                         </button>
+
+                        <div className="flex items-center gap-1.5">
+                          {/* Edit Builder */}
+                          <Link href={`/workflows/${wf.id}/edit`}>
+                            <Button variant="outline" size="sm" className="text-xs h-7 px-2.5 font-semibold">
+                              Edit
+                            </Button>
+                          </Link>
+
+                          {/* Run Now Button */}
+                          <Button
+                            size="sm"
+                            onClick={() => handleQuickRun(wf)}
+                            disabled={triggeringId === wf.id}
+                            className="text-xs h-7 px-2.5 bg-white text-black hover:bg-neutral-200 font-semibold"
+                          >
+                            <Play className="w-3 h-3 mr-1" />
+                            {triggeringId === wf.id ? 'Running...' : 'Run'}
+                          </Button>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        {/* Test / Dry Run */}
-                        <button
-                          onClick={() => setDryRunWf(wf)}
-                          title="Dry Run / Test"
-                          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
-                        >
-                          <Activity className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
-                        </button>
+                      {/* Row 2: Secondary Tool Icons */}
+                      <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]/50">
+                        <div className="flex items-center gap-1">
+                          {/* Test / Dry Run */}
+                          <button
+                            onClick={() => setDryRunWf(wf)}
+                            title="Dry Run / Test"
+                            className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
+                          >
+                            <Activity className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
+                          </button>
 
-                        {/* Bulk Run */}
-                        <button
-                          onClick={() => setBulkWfId(wf.id)}
-                          title="Bulk CSV Processing"
-                          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
-                        >
-                          <Layers className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
-                        </button>
+                          {/* Bulk Run */}
+                          <button
+                            onClick={() => setBulkWfId(wf.id)}
+                            title="Bulk CSV Processing"
+                            className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
+                          >
+                            <Layers className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
+                          </button>
 
-                        {/* Schedule */}
-                        <button
-                          onClick={() => setScheduleWfId(wf.id)}
-                          title="Configure Schedule"
-                          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
-                        >
-                          <Clock className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
-                        </button>
+                          {/* Schedule */}
+                          <button
+                            onClick={() => setScheduleWfId(wf.id)}
+                            title="Configure Schedule"
+                            className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
+                          >
+                            <Clock className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
+                          </button>
 
-                        {/* Version History */}
-                        <button
-                          onClick={() => setVersionWfId(wf.id)}
-                          title="Version History"
-                          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
-                        >
-                          <Calendar className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
-                        </button>
+                          {/* Version History */}
+                          <button
+                            onClick={() => setVersionWfId(wf.id)}
+                            title="Version History"
+                            className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
+                          >
+                            <Calendar className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
+                          </button>
 
-                        {/* Export JSON */}
-                        <button
-                          onClick={() => handleExport(wf.id)}
-                          title="Export JSON"
-                          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
-                        >
-                          <Download className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
-                        </button>
+                          {/* Export JSON */}
+                          <button
+                            onClick={() => handleExport(wf.id)}
+                            title="Export JSON"
+                            className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
+                          >
+                            <Download className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
+                          </button>
 
-                        {/* Duplicate */}
-                        <button
-                          onClick={() => handleDuplicate(wf.id)}
-                          title="Duplicate Workflow"
-                          className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
-                        >
-                          <Copy className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
-                        </button>
+                          {/* Duplicate */}
+                          <button
+                            onClick={() => handleDuplicate(wf.id)}
+                            title="Duplicate Workflow"
+                            className="p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:text-white transition-colors"
+                          >
+                            <Copy className="w-3.5 h-3.5 text-neutral-400 hover:text-white" />
+                          </button>
+                        </div>
 
                         {/* Delete */}
                         <button
@@ -650,24 +674,6 @@ export default function WorkflowsDashboardPage() {
                         >
                           <Trash2 className="w-3.5 h-3.5 text-red-400" />
                         </button>
-
-                        {/* Edit Builder */}
-                        <Link href={`/workflows/${wf.id}/edit`}>
-                          <Button variant="outline" size="sm" className="text-xs h-7 px-2 font-semibold">
-                            Edit
-                          </Button>
-                        </Link>
-
-                        {/* Run Now Button */}
-                        <Button
-                          size="sm"
-                          onClick={() => handleQuickRun(wf)}
-                          disabled={triggeringId === wf.id}
-                          className="text-xs h-7 px-2.5 bg-white text-black hover:bg-neutral-200 font-semibold"
-                        >
-                          <Play className="w-3 h-3 mr-1" />
-                          {triggeringId === wf.id ? 'Running...' : 'Run'}
-                        </Button>
                       </div>
                     </div>
                   </div>

@@ -1,12 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Plus, Sun, Moon, Menu, ArrowLeft } from 'lucide-react';
+import { Plus, Sun, Moon, Menu, ArrowLeft, MessageSquare } from 'lucide-react';
 import { useTheme, useNavigation } from '@/app/providers';
 import { Button } from '@/components/ui/button';
 import { UserProfileMenu } from '@/components/layout/user-profile-menu';
 import { WorkspaceSelector } from '@/components/layout/workspace-selector';
+import { PalettePicker } from '@/components/layout/palette-picker';
+import { FeedbackModal } from '@/components/feedback/feedback-modal';
 
 export interface HeaderAction {
   label: string;
@@ -22,11 +24,20 @@ export interface HeaderProps {
   backHref?: string;
   action?: HeaderAction;
   children?: React.ReactNode;
+  hideWorkspaceSelector?: boolean;
 }
 
-export function Header({ title, description, backHref, action, children }: HeaderProps) {
+export function Header({
+  title,
+  description,
+  backHref,
+  action,
+  children,
+  hideWorkspaceSelector = false,
+}: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const { toggleMobile } = useNavigation();
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   const ActionIcon = action?.icon || Plus;
 
@@ -93,7 +104,20 @@ export function Header({ title, description, backHref, action, children }: Heade
         ) : null}
 
         {/* Workspace Selector */}
-        <WorkspaceSelector />
+        {!hideWorkspaceSelector && <WorkspaceSelector />}
+
+        {/* Color Palette Selector */}
+        <PalettePicker />
+
+        {/* Quick Feedback Trigger */}
+        <button
+          onClick={() => setIsFeedbackOpen(true)}
+          className="p-2 rounded-md border border-[var(--border)] hover:bg-[var(--surface-hover)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer h-8 w-8 flex items-center justify-center shrink-0"
+          title="Share Feedback or Report Bug"
+          aria-label="Share Feedback"
+        >
+          <MessageSquare className="w-4 h-4" />
+        </button>
 
         {/* Theme Toggle Button */}
         <button
@@ -108,6 +132,13 @@ export function Header({ title, description, backHref, action, children }: Heade
         {/* User Profile Menu */}
         <UserProfileMenu />
       </div>
+
+      {/* Global Feedback Modal */}
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        context={{ page: typeof window !== 'undefined' ? window.location.pathname : undefined }}
+      />
     </header>
   );
 }

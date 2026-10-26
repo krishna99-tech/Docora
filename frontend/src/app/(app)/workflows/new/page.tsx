@@ -194,6 +194,7 @@ function NewWorkflowBuilderContent() {
         title={name || 'New Document Pipeline'}
         description={`Category: ${category} • Trigger: ${triggerType}`}
         backHref="/workflows"
+        hideWorkspaceSelector
       >
         <div className="flex items-center gap-2">
           {/* View Mode Toggle: Canvas vs Step List */}

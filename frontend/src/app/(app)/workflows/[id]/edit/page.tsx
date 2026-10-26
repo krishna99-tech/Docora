@@ -211,8 +211,9 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
         title={name || 'Edit Workflow'}
         description={`Category: ${category} • Version ${version}`}
         backHref="/workflows"
+        hideWorkspaceSelector
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* View Mode Toggle: Canvas vs Step List */}
           <div className="p-0.5 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border)] flex items-center">
             <button
@@ -225,7 +226,7 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
               }`}
             >
               <Layout className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px]">Canvas</span>
+              <span className="hidden lg:inline text-[11px]">Canvas</span>
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -237,7 +238,7 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px]">Step List</span>
+              <span className="hidden lg:inline text-[11px]">Step List</span>
             </button>
           </div>
 
@@ -246,7 +247,7 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
             variant="outline"
             size="sm"
             onClick={() => setIsVersionsOpen(true)}
-            className="text-xs h-8 font-semibold hidden md:inline-flex"
+            className="text-xs h-8 font-semibold hidden 2xl:inline-flex"
           >
             <Calendar className="w-3.5 h-3.5 mr-1" /> Revisions
           </Button>
@@ -256,7 +257,7 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
             variant="outline"
             size="sm"
             onClick={() => setIsScheduleOpen(true)}
-            className="text-xs h-8 font-semibold hidden lg:inline-flex"
+            className="text-xs h-8 font-semibold hidden 2xl:inline-flex"
           >
             <Clock className="w-3.5 h-3.5 mr-1" /> Schedule
           </Button>
@@ -266,9 +267,10 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
             variant="outline"
             size="sm"
             onClick={() => setIsDryRunOpen(true)}
-            className="text-xs h-8 font-semibold hidden sm:inline-flex"
+            className="text-xs h-8 font-semibold hidden md:inline-flex"
           >
-            <Activity className="w-3.5 h-3.5 mr-1" /> Test Run
+            <Activity className="w-3.5 h-3.5 sm:mr-1" />
+            <span className="hidden sm:inline">Test Run</span>
           </Button>
 
           {/* Delete Workflow */}
@@ -277,10 +279,11 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
             size="sm"
             onClick={handleDeleteWorkflow}
             disabled={deleting}
-            className="text-xs h-8 font-semibold border-red-900/40 text-red-400 hover:bg-red-950/20 hover:text-red-300"
+            title="Delete Workflow"
+            className="text-xs h-8 px-2.5 font-semibold border-red-900/40 text-red-400 hover:bg-red-950/20 hover:text-red-300"
           >
-            <Trash2 className="w-3.5 h-3.5 mr-1" />
-            {deleting ? 'Deleting...' : 'Delete'}
+            <Trash2 className="w-3.5 h-3.5 sm:mr-1" />
+            <span className="hidden xl:inline">{deleting ? 'Deleting...' : 'Delete'}</span>
           </Button>
 
           {/* Save Changes */}
@@ -288,10 +291,11 @@ export default function EditWorkflowBuilderPage({ params }: { params: Promise<{ 
             size="sm"
             onClick={handleSaveWorkflow}
             disabled={saving}
-            className="text-xs h-8 bg-white text-black hover:bg-neutral-200 font-semibold"
+            className="text-xs h-8 px-3 bg-white text-black hover:bg-neutral-200 font-semibold"
           >
             <Save className="w-3.5 h-3.5 mr-1" />
-            {saving ? 'Saving...' : 'Save Updates'}
+            <span className="hidden sm:inline">{saving ? 'Saving...' : 'Save Updates'}</span>
+            <span className="sm:hidden">{saving ? 'Saving...' : 'Save'}</span>
           </Button>
         </div>
       </Header>

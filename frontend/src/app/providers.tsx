@@ -18,9 +18,13 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
 }
 
+import { ColorPaletteId } from '@/types/palette';
+
 interface ThemeContextType {
   theme: 'light' | 'dark';
   toggleTheme: () => void;
+  colorPalette: ColorPaletteId;
+  setColorPalette: (palette: ColorPaletteId) => void;
 }
 
 interface NavigationContextType {
@@ -71,6 +75,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [colorPalette, setColorPaletteState] = useState<ColorPaletteId>('ocean');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isTabletCollapsed, setIsTabletCollapsed] = useState(false);
 
@@ -89,7 +94,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Initialize theme from localStorage or system preference
+  // Initialize theme and color palette from localStorage or system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem('docora_theme') as 'light' | 'dark' | null;
     const initialTheme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -99,6 +104,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    const savedPalette = (localStorage.getItem('docora_palette') as ColorPaletteId) || 'ocean';
+    setColorPaletteState(savedPalette);
+    document.documentElement.setAttribute('data-palette', savedPalette);
   }, []);
 
   const toggleTheme = () => {
@@ -110,6 +119,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
     } else {
       document.documentElement.classList.remove('dark');
     }
+  };
+
+  const setColorPalette = (palette: ColorPaletteId) => {
+    setColorPaletteState(palette);
+    localStorage.setItem('docora_palette', palette);
+    document.documentElement.setAttribute('data-palette', palette);
   };
 
   // Check current session
@@ -161,7 +176,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <ThemeContext.Provider value={{ theme, toggleTheme, colorPalette, setColorPalette }}>
         <NavigationContext.Provider
           value={{
             isMobileOpen,

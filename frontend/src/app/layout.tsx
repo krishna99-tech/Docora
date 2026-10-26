@@ -3,8 +3,13 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Docora | Professional Receipt & PDF Generator',
-  description: 'Enterprise receipt, invoice, and PDF document generator and management platform.',
+  title: 'DocAutomate | Create, Automate, Deliver',
+  description: 'Enterprise receipt, invoice, and PDF document automation platform.',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/icons/docautomate-icon-128.svg',
+  },
 };
 
 import { OfflineBanner } from '@/components/errors/offline-banner';
