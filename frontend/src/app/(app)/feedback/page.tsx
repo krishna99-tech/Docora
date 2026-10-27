@@ -24,6 +24,10 @@ import {
 import { STORAGE_KEYS } from '@/constants';
 import { FeedbackBanner } from '@/components/feedback/feedback-banner';
 import { EmptyState } from '@/components/feedback/empty-state';
+import { Header } from '@/components/layout/header';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 type CategoryType = 'bug' | 'feature' | 'rating' | 'general';
 type BugSeverity = 'low' | 'medium' | 'high' | 'critical';
@@ -189,129 +193,133 @@ export default function FeedbackPage() {
   });
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12">
-      {/* Top Banner Alert if active */}
-      {bannerFeedback && (
-        <FeedbackBanner
-          type={bannerFeedback.type}
-          title="Feedback Submitted"
-          message={bannerFeedback.message}
-          autoDismissMs={6000}
-          onClose={() => setBannerFeedback(null)}
-        />
-      )}
+    <div className="flex-1 flex flex-col">
+      <Header
+        title="Feedback & Ideas"
+        description="Help shape the future of Docora by submitting ideas, bug reports, and voting on community roadmap features"
+      />
 
-      {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-[var(--border,#e5e5e5)] bg-gradient-to-br from-[var(--surface,#ffffff)] via-[var(--surface-secondary,#fafafa)] to-[var(--brand-subtle,rgba(0,102,255,0.05))] p-6 sm:p-10 shadow-xs">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--brand-from,#0066ff)]/10 text-[var(--brand-from,#0066ff)] border border-[var(--brand-from,#0066ff)]/20">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Voice of the Customer</span>
+      <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
+        {/* Top Banner Alert if active */}
+        {bannerFeedback && (
+          <FeedbackBanner
+            type={bannerFeedback.type}
+            title="Feedback Submitted"
+            message={bannerFeedback.message}
+            autoDismissMs={6000}
+            onClose={() => setBannerFeedback(null)}
+          />
+        )}
+
+        {/* Hero Header */}
+        <Card className="relative overflow-hidden p-6 sm:p-8 bg-gradient-to-br from-[var(--surface)] via-[var(--surface-secondary)] to-[var(--brand-subtle)] border border-[var(--border)] shadow-xs">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2.5 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[var(--brand-subtle)] text-[var(--brand-from)] border border-[var(--brand-border)]">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Voice of the Customer</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--foreground)]">
+                Product Feedback & Community Suggestions
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed">
+                Help shape the future of Docora. Whether you found a glitch, have a killer feature idea, or want to share your experience, we read every submission.
+              </p>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--foreground,#111111)]">
-              Product Feedback & Ideas
-            </h1>
-            <p className="text-sm sm:text-base text-[var(--muted-foreground,#737373)] leading-relaxed">
-              Help shape the future of Docora. Whether you found a glitch, have a killer feature idea, or want to share your experience, we read every submission.
-            </p>
+
+            {/* Quick CSAT Summary Card */}
+            <div className="grid grid-cols-2 gap-3 shrink-0 sm:w-80">
+              <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur-xs shadow-xs text-center">
+                <div className="flex items-center justify-center gap-1 text-amber-500 mb-1">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="w-3.5 h-3.5 fill-current" />
+                  ))}
+                </div>
+                <div className="text-lg font-bold text-[var(--foreground)]">4.9 / 5.0</div>
+                <div className="text-[11px] text-[var(--muted-foreground)]">Customer Satisfaction</div>
+              </div>
+              <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur-xs shadow-xs text-center">
+                <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div className="text-lg font-bold text-[var(--foreground)]">&lt; 24h</div>
+                <div className="text-[11px] text-[var(--muted-foreground)]">Avg. Triage Response</div>
+              </div>
+            </div>
           </div>
+        </Card>
 
-          {/* Quick CSAT Summary Card */}
-          <div className="grid grid-cols-2 gap-3 shrink-0 sm:w-80">
-            <div className="p-3.5 rounded-2xl border border-[var(--border,#e5e5e5)] bg-[var(--surface,#ffffff)]/80 backdrop-blur-xs shadow-xs text-center">
-              <div className="flex items-center justify-center gap-1 text-amber-500 mb-1">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} className="w-3.5 h-3.5 fill-current" />
-                ))}
-              </div>
-              <div className="text-xl font-bold text-[var(--foreground,#111111)]">4.9 / 5.0</div>
-              <div className="text-[11px] text-[var(--muted-foreground,#737373)]">Customer Satisfaction</div>
-            </div>
-            <div className="p-3.5 rounded-2xl border border-[var(--border,#e5e5e5)] bg-[var(--surface,#ffffff)]/80 backdrop-blur-xs shadow-xs text-center">
-              <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div className="text-xl font-bold text-[var(--foreground,#111111)]">&lt; 24h</div>
-              <div className="text-[11px] text-[var(--muted-foreground,#737373)]">Avg. Triage Response</div>
-            </div>
+        {/* Main Tab Switcher */}
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant={activeTab === 'submit' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveTab('submit')}
+              className="gap-2 text-xs font-semibold"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Submit Feedback</span>
+            </Button>
+            <Button
+              type="button"
+              variant={activeTab === 'roadmap' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setActiveTab('roadmap')}
+              className="gap-2 text-xs font-semibold"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>Community Roadmap ({roadmap.length})</span>
+            </Button>
           </div>
         </div>
-      </div>
 
-      {/* Main Tab Switcher */}
-      <div className="flex items-center justify-between border-b border-[var(--border,#e5e5e5)] pb-3">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab('submit')}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-              activeTab === 'submit'
-                ? 'bg-[var(--brand-from,#0066ff)] text-white shadow-xs'
-                : 'text-[var(--muted-foreground,#737373)] hover:text-[var(--foreground,#111111)] hover:bg-[var(--surface-hover,#f1f1f1)]'
-            }`}
-          >
-            <Send className="w-4 h-4" />
-            <span>Submit Feedback</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('roadmap')}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-              activeTab === 'roadmap'
-                ? 'bg-[var(--brand-from,#0066ff)] text-white shadow-xs'
-                : 'text-[var(--muted-foreground,#737373)] hover:text-[var(--foreground,#111111)] hover:bg-[var(--surface-hover,#f1f1f1)]'
-            }`}
-          >
-            <TrendingUp className="w-4 h-4" />
-            <span>Community Roadmap ({roadmap.length})</span>
-          </button>
-        </div>
-      </div>
-
-      {/* TAB 1: SUBMISSION FORM */}
-      {activeTab === 'submit' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* TAB 1: SUBMISSION FORM */}
+        {activeTab === 'submit' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Form (2 cols) */}
           <div className="lg:col-span-2 space-y-6">
             {submittedTicket ? (
-              <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-8 sm:p-12 text-center animate-in zoom-in-95 duration-200">
-                <div className="w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 mx-auto mb-5 shadow-sm">
-                  <CheckCircle2 className="w-12 h-12" />
+              <Card className="border-emerald-500/30 bg-emerald-500/5 p-8 sm:p-12 text-center animate-in zoom-in-95 duration-200">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 mx-auto mb-4 shadow-xs">
+                  <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h3 className="text-2xl font-bold text-[var(--foreground,#111111)] mb-2">
+                <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">
                   Feedback Successfully Filed!
                 </h3>
-                <p className="text-sm text-[var(--muted-foreground,#737373)] max-w-md mx-auto mb-6">
+                <p className="text-xs sm:text-sm text-[var(--muted-foreground)] max-w-md mx-auto mb-6">
                   Thank you for contributing to Docora. We have assigned ticket reference{' '}
-                  <span className="font-mono font-bold text-[var(--foreground,#111111)]">
+                  <span className="font-mono font-bold text-[var(--foreground)]">
                     {submittedTicket}
                   </span>{' '}
                   to your submission.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-3">
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={handleResetForm}
-                    className="px-5 py-2.5 rounded-xl text-xs font-semibold border border-[var(--border,#e5e5e5)] bg-[var(--surface,#ffffff)] hover:bg-[var(--surface-hover,#f1f1f1)] text-[var(--foreground,#111111)] shadow-xs transition-colors"
+                    className="text-xs"
                   >
                     Submit Another Feedback
-                  </button>
-                  <Link
-                    href="/dashboard"
-                    className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-[var(--brand-from,#0066ff)] hover:opacity-90 text-white shadow-xs transition-all"
-                  >
-                    Return to Dashboard
+                  </Button>
+                  <Link href="/dashboard">
+                    <Button size="sm" className="text-xs font-semibold">
+                      Return to Dashboard
+                    </Button>
                   </Link>
                 </div>
-              </div>
+              </Card>
             ) : (
-              <form
-                onSubmit={handleSubmit}
-                className="rounded-3xl border border-[var(--border,#e5e5e5)] bg-[var(--surface,#ffffff)] p-6 sm:p-8 shadow-xs space-y-6"
-              >
-                {/* Category Selection Chips */}
-                <div>
+              <Card className="p-6 sm:p-8 shadow-xs">
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-6"
+                >
+                  {/* Category Selection Chips */}
+                  <div>
                   <label className="block text-xs font-semibold text-[var(--muted-foreground,#737373)] uppercase tracking-wider mb-2.5">
                     1. Select Feedback Category
                   </label>
@@ -509,81 +517,83 @@ export default function FeedbackPage() {
                 </div>
 
                 {/* Submit Button */}
-                <div className="pt-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground,#737373)]">
-                    <Laptop className="w-3.5 h-3.5" />
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+                    <Laptop className="w-3.5 h-3.5 shrink-0" />
                     <span>Client & system context automatically included</span>
                   </div>
-                  <button
+                  <Button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold bg-[var(--brand-from,#0066ff)] hover:opacity-90 disabled:opacity-50 text-white shadow-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    size="md"
+                    isLoading={isSubmitting}
+                    className="gap-2 font-semibold px-6 shadow-xs"
                   >
                     <Send className="w-4 h-4" />
-                    <span>{isSubmitting ? 'Transmitting...' : 'Send Feedback'}</span>
-                  </button>
+                    <span>Send Feedback</span>
+                  </Button>
                 </div>
               </form>
+            </Card>
             )}
           </div>
 
           {/* Right Sidebar Info (1 col) */}
           <div className="space-y-6">
             {/* Direct Support Card */}
-            <div className="rounded-3xl border border-[var(--border,#e5e5e5)] bg-[var(--surface,#ffffff)] p-6 shadow-xs space-y-4">
+            <Card className="p-5 sm:p-6 shadow-xs space-y-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-[var(--brand-from,#0066ff)]/10 text-[var(--brand-from,#0066ff)]">
+                <div className="p-2.5 rounded-xl bg-[var(--brand-subtle)] text-[var(--brand-from)] border border-[var(--brand-border)]">
                   <MessageCircle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-[var(--foreground,#111111)]">Direct Engineering Access</h4>
-                  <p className="text-xs text-[var(--muted-foreground,#737373)]">Have an urgent blocker?</p>
+                  <h4 className="text-sm font-bold text-[var(--foreground)]">Direct Engineering Access</h4>
+                  <p className="text-xs text-[var(--muted-foreground)]">Have an urgent blocker?</p>
                 </div>
               </div>
-              <p className="text-xs text-[var(--muted-foreground,#737373)] leading-relaxed">
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
                 Critical outages and security issues are triaged immediately by our core team with round-the-clock monitoring.
               </p>
-              <div className="pt-2 border-t border-[var(--border,#e5e5e5)] space-y-2">
+              <div className="pt-2 border-t border-[var(--border)] space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[var(--muted-foreground,#737373)]">API Status</span>
+                  <span className="text-[var(--muted-foreground)]">API Status</span>
                   <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     All Systems Operational
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[var(--muted-foreground,#737373)]">Response SLA</span>
-                  <span className="font-semibold text-[var(--foreground,#111111)]">Same Day</span>
+                  <span className="text-[var(--muted-foreground)]">Response SLA</span>
+                  <span className="font-semibold text-[var(--foreground)]">Same Day</span>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* What Happens Next Card */}
-            <div className="rounded-3xl border border-[var(--border,#e5e5e5)] bg-[var(--surface-secondary,#fafafa)] p-6 shadow-xs space-y-3">
-              <h4 className="text-xs font-bold text-[var(--muted-foreground,#737373)] uppercase tracking-wider">
+            <Card className="p-5 sm:p-6 shadow-xs space-y-3 bg-[var(--surface-secondary)]">
+              <h4 className="text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
                 What happens after you submit?
               </h4>
-              <ul className="space-y-2.5 text-xs text-[var(--foreground,#111111)]">
+              <ul className="space-y-2.5 text-xs text-[var(--foreground)]">
                 <li className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
+                  <div className="w-5 h-5 rounded-full bg-[var(--brand-subtle)] text-[var(--brand-from)] flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
                     1
                   </div>
                   <span>Your submission is ingested with diagnostic metadata and assigned a tracking ID.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
+                  <div className="w-5 h-5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
                     2
                   </div>
                   <span>Feature requests are mapped directly into our community roadmap voting list.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 font-bold text-[10px]">
                     3
                   </div>
                   <span>If you provided an email, you will receive an update once your item enters development.</span>
                 </li>
               </ul>
-            </div>
+            </Card>
           </div>
         </div>
       )}
@@ -592,15 +602,15 @@ export default function FeedbackPage() {
       {activeTab === 'roadmap' && (
         <div className="space-y-6">
           {/* Controls: Search and Status Filters */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-[var(--border,#e5e5e5)] bg-[var(--surface,#ffffff)]">
+          <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 shadow-xs">
             <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground,#737373)]" />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search community suggestions..."
-                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-[var(--border,#e5e5e5)] bg-[var(--surface-secondary,#fafafa)] text-[var(--foreground,#111111)] placeholder:text-[var(--muted-foreground,#737373)] focus:outline-hidden focus:ring-2 focus:ring-[var(--brand-from,#0066ff)]"
+                className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-hidden focus:ring-2 focus:ring-[var(--brand-ring)] focus:border-[var(--brand-from)]"
               />
             </div>
 
@@ -612,21 +622,19 @@ export default function FeedbackPage() {
                 { id: 'under_review', label: 'Under Review' },
                 { id: 'shipped', label: 'Shipped' },
               ].map((f) => (
-                <button
+                <Button
                   key={f.id}
                   type="button"
+                  size="sm"
+                  variant={roadmapFilter === f.id ? 'default' : 'ghost'}
                   onClick={() => setRoadmapFilter(f.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
-                    roadmapFilter === f.id
-                      ? 'bg-[var(--foreground,#111111)] text-[var(--surface,#ffffff)]'
-                      : 'text-[var(--muted-foreground,#737373)] hover:text-[var(--foreground,#111111)] hover:bg-[var(--surface-hover,#f1f1f1)]'
-                  }`}
+                  className="text-xs font-semibold whitespace-nowrap h-8 px-3"
                 >
                   {f.label}
-                </button>
+                </Button>
               ))}
             </div>
-          </div>
+          </Card>
 
           {/* List of Roadmap Items */}
           {filteredRoadmap.length === 0 ? (
@@ -645,10 +653,10 @@ export default function FeedbackPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredRoadmap.map((item) => {
                 const statusStyles = {
-                  shipped: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-                  in_progress: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-                  planned: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
-                  under_review: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+                  shipped: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                  in_progress: 'bg-[var(--brand-subtle)] text-[var(--brand-from)] border-[var(--brand-border)]',
+                  planned: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+                  under_review: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
                 }[item.status];
 
                 const statusLabels = {
@@ -659,18 +667,18 @@ export default function FeedbackPage() {
                 }[item.status];
 
                 return (
-                  <div
+                  <Card
                     key={item.id}
-                    className="flex items-start gap-4 p-5 rounded-2xl border border-[var(--border,#e5e5e5)] bg-[var(--surface,#ffffff)] hover:border-[var(--brand-from,#0066ff)]/50 transition-all shadow-xs"
+                    className="flex items-start gap-4 p-5 hover:border-[var(--brand-from)]/50 transition-all shadow-xs"
                   >
                     {/* Upvote Button */}
                     <button
                       type="button"
                       onClick={() => handleVote(item.id)}
-                      className={`flex flex-col items-center justify-center w-12 h-14 rounded-xl border transition-all shrink-0 ${
+                      className={`flex flex-col items-center justify-center w-12 h-14 rounded-xl border transition-all shrink-0 cursor-pointer ${
                         item.userVoted
-                          ? 'border-[var(--brand-from,#0066ff)] bg-[var(--brand-from,#0066ff)] text-white shadow-xs'
-                          : 'border-[var(--border,#e5e5e5)] bg-[var(--surface-secondary,#fafafa)] hover:bg-[var(--surface-hover,#f1f1f1)] text-[var(--foreground,#111111)]'
+                          ? 'border-[var(--brand-from)] bg-[var(--brand-from)] text-white shadow-xs'
+                          : 'border-[var(--border)] bg-[var(--surface-secondary)] hover:bg-[var(--surface-hover)] text-[var(--foreground)]'
                       }`}
                     >
                       <ThumbsUp className={`w-4 h-4 mb-1 ${item.userVoted ? 'fill-current' : ''}`} />
@@ -683,24 +691,25 @@ export default function FeedbackPage() {
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusStyles}`}>
                           {statusLabels}
                         </span>
-                        <span className="text-[11px] text-[var(--muted-foreground,#737373)] font-medium">
+                        <span className="text-[11px] text-[var(--muted-foreground)] font-medium">
                           {item.category}
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-[var(--foreground,#111111)]">
+                      <h4 className="text-sm font-bold text-[var(--foreground)]">
                         {item.title}
                       </h4>
-                      <p className="text-xs text-[var(--muted-foreground,#737373)] leading-relaxed">
+                      <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
                         {item.description}
                       </p>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

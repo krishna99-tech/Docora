@@ -69,7 +69,7 @@ export function DocumentPreviewContainer({
   const resetZoom = () => setScale(1);
 
   return (
-    <div className="flex flex-col h-full bg-[var(--surface-secondary)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-[var(--surface-secondary)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm print:border-none print:bg-transparent print:shadow-none print:rounded-none print:overflow-visible print:h-auto print:p-0 print:m-0">
       {/* Preview Top Toolbar (Hidden on Print) */}
       <div className="no-print flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-[var(--surface)] border-b border-[var(--border)]">
         <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export function DocumentPreviewContainer({
       {/* Scaled Preview Canvas Wrapper */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto p-3 sm:p-6 flex items-start justify-center relative min-h-[500px]"
+        className="flex-1 overflow-auto p-3 sm:p-6 flex items-start justify-center relative min-h-[500px] print:p-0 print:m-0 print:overflow-visible print:min-h-0 print:block"
       >
         <div
           style={{
@@ -174,7 +174,7 @@ export function DocumentPreviewContainer({
             width: '794px',
             minHeight: '1123px',
           }}
-          className="printable-area shrink-0"
+          className="printable-area shrink-0 print:w-full print:max-w-none print:m-0 print:p-0 print:transform-none print:min-h-0"
         >
           {children}
         </div>

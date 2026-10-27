@@ -50,37 +50,37 @@ export function DocumentLayoutPicker({ config, onChange }: DocumentLayoutPickerP
         </CardDescription>
       </CardHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Layout Style Preset */}
+      <div className="space-y-4">
+        {/* Layout Style Preset - Full Width Row */}
         <div>
           <label className="text-xs font-semibold text-[var(--foreground)] block mb-2">
             Layout Style
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <button
               type="button"
               onClick={() => update('preset', 'modern')}
-              className={`p-2.5 text-left rounded-md border text-xs flex flex-col gap-1 transition-all ${
+              className={`p-2.5 rounded-lg border text-xs flex items-center justify-center gap-2 font-medium transition-all cursor-pointer min-w-0 ${
                 config.preset === 'modern'
-                  ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] font-medium shadow-sm'
-                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                  ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
+                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)]'
               }`}
             >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Modern</span>
+              <FileText className="w-4 h-4 shrink-0" />
+              <span className="truncate font-semibold">Modern</span>
             </button>
 
             <button
               type="button"
               onClick={() => update('preset', 'classic')}
-              className={`p-2.5 text-left rounded-md border text-xs flex flex-col gap-1 transition-all ${
+              className={`p-2.5 rounded-lg border text-xs flex items-center justify-center gap-2 font-medium transition-all cursor-pointer min-w-0 ${
                 config.preset === 'classic'
-                  ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] font-medium shadow-sm'
-                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                  ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
+                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)]'
               }`}
             >
-              <Columns className="w-3.5 h-3.5" />
-              <span>Classic</span>
+              <Columns className="w-4 h-4 shrink-0" />
+              <span className="truncate font-semibold">Classic</span>
             </button>
 
             <button
@@ -94,91 +94,94 @@ export function DocumentLayoutPicker({ config, onChange }: DocumentLayoutPickerP
                   headerAlignment: 'center',
                 });
               }}
-              className={`p-2.5 text-left rounded-md border text-xs flex flex-col gap-1 transition-all ${
+              className={`p-2.5 rounded-lg border text-xs flex items-center justify-center gap-2 font-medium transition-all cursor-pointer min-w-0 ${
                 config.preset === 'thermal'
-                  ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] font-medium shadow-sm'
-                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                  ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
+                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)]'
               }`}
             >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span>POS Roll</span>
+              <Smartphone className="w-4 h-4 shrink-0" />
+              <span className="truncate font-semibold">POS Roll</span>
             </button>
           </div>
         </div>
 
-        {/* Paper Size & Orientation */}
-        <div>
-          <label className="text-xs font-semibold text-[var(--foreground)] block mb-2">
-            Paper Size & Orientation
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <select
-              value={config.pageSize}
-              disabled={config.preset === 'thermal'}
-              onChange={(e) => update('pageSize', e.target.value as any)}
-              className="w-full px-2.5 py-2 text-xs rounded-md bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
-            >
-              <option value="A4">A4 (210×297mm)</option>
-              <option value="Letter">US Letter</option>
-              <option value="Thermal80">80mm POS Roll</option>
-            </select>
+        {/* Paper Size & Orientation + Header Alignment */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+          {/* Paper Size & Orientation */}
+          <div>
+            <label className="text-xs font-semibold text-[var(--foreground)] block mb-2">
+              Paper Size & Orientation
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={config.pageSize}
+                disabled={config.preset === 'thermal'}
+                onChange={(e) => update('pageSize', e.target.value as any)}
+                className="w-full px-2.5 py-2 text-xs rounded-lg bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-ring)] focus:border-transparent transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="A4">A4 (210×297)</option>
+                <option value="Letter">US Letter</option>
+                <option value="Thermal80">80mm POS</option>
+              </select>
 
-            <select
-              value={config.orientation}
-              disabled={config.preset === 'thermal'}
-              onChange={(e) => update('orientation', e.target.value as any)}
-              className="w-full px-2.5 py-2 text-xs rounded-md bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
-            >
-              <option value="portrait">Portrait</option>
-              <option value="landscape">Landscape</option>
-            </select>
+              <select
+                value={config.orientation}
+                disabled={config.preset === 'thermal'}
+                onChange={(e) => update('orientation', e.target.value as any)}
+                className="w-full px-2.5 py-2 text-xs rounded-lg bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-ring)] focus:border-transparent transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        {/* Header Alignment */}
-        <div>
-          <label className="text-xs font-semibold text-[var(--foreground)] block mb-2">
-            Header Alignment
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => update('headerAlignment', 'split')}
-              className={`p-2 text-center rounded-md border text-xs flex items-center justify-center gap-1.5 transition-all ${
-                config.headerAlignment === 'split'
-                  ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] font-medium shadow-sm'
-                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              <Columns className="w-3.5 h-3.5" />
-              <span>Split</span>
-            </button>
+          {/* Header Alignment */}
+          <div>
+            <label className="text-xs font-semibold text-[var(--foreground)] block mb-2">
+              Header Alignment
+            </label>
+            <div className="grid grid-cols-3 gap-1 bg-[var(--surface-secondary)] p-1 rounded-lg border border-[var(--border)]">
+              <button
+                type="button"
+                onClick={() => update('headerAlignment', 'split')}
+                className={`py-1.5 px-2 rounded-md text-xs flex items-center justify-center gap-1 font-medium transition-all cursor-pointer min-w-0 ${
+                  config.headerAlignment === 'split'
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs font-semibold'
+                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                }`}
+              >
+                <Columns className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Split</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => update('headerAlignment', 'center')}
-              className={`p-2 text-center rounded-md border text-xs flex items-center justify-center gap-1.5 transition-all ${
-                config.headerAlignment === 'center'
-                  ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] font-medium shadow-sm'
-                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              <AlignCenter className="w-3.5 h-3.5" />
-              <span>Center</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => update('headerAlignment', 'center')}
+                className={`py-1.5 px-2 rounded-md text-xs flex items-center justify-center gap-1 font-medium transition-all cursor-pointer min-w-0 ${
+                  config.headerAlignment === 'center'
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs font-semibold'
+                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                }`}
+              >
+                <AlignCenter className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Center</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => update('headerAlignment', 'left')}
-              className={`p-2 text-center rounded-md border text-xs flex items-center justify-center gap-1.5 transition-all ${
-                config.headerAlignment === 'left'
-                  ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)] font-medium shadow-sm'
-                  : 'border-[var(--border)] bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              <AlignLeft className="w-3.5 h-3.5" />
-              <span>Left</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => update('headerAlignment', 'left')}
+                className={`py-1.5 px-2 rounded-md text-xs flex items-center justify-center gap-1 font-medium transition-all cursor-pointer min-w-0 ${
+                  config.headerAlignment === 'left'
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs font-semibold'
+                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                }`}
+              >
+                <AlignLeft className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Left</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

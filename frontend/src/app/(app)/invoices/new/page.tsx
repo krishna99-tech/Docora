@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Trash2, ArrowLeft, CheckCircle, Save, Eye, Edit3, Columns } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, CheckCircle, Save, Eye, Edit3, Columns, Printer } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Header } from '@/components/layout/header';
@@ -20,6 +20,7 @@ export default function NewInvoicePage() {
   const router = useRouter();
 
   const [customerId, setCustomerId] = useState('');
+  const [documentTitle, setDocumentTitle] = useState('INVOICE');
   const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
   const [dueDate, setDueDate] = useState(() => {
     const d = new Date();
@@ -159,57 +160,71 @@ export default function NewInvoicePage() {
             </Button>
           </Link>
 
-          {/* View Mode Switcher */}
-          <div className="flex items-center gap-1 bg-[var(--surface-secondary)] p-1 rounded-lg border border-[var(--border)] self-start sm:self-auto text-xs">
-            <button
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
               type="button"
-              onClick={() => setViewMode('editor')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${
-                viewMode === 'editor'
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
-                  : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="text-xs font-semibold cursor-pointer shadow-xs border-[var(--border)] hover:bg-[var(--surface-hover)]"
+              title="Print document directly (Ctrl+P)"
             >
-              <Edit3 className="w-3.5 h-3.5" />
-              Editor
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('preview')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${
-                viewMode === 'preview'
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
-                  : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              Live Preview
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('split')}
-              className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${
-                viewMode === 'split'
-                  ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
-                  : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              <Columns className="w-3.5 h-3.5" />
-              Split View
-            </button>
+              <Printer className="w-3.5 h-3.5 mr-1.5 text-[var(--primary)]" />
+              Direct Print
+            </Button>
+
+            {/* View Mode Switcher */}
+            <div className="flex items-center gap-1 bg-[var(--surface-secondary)] p-1 rounded-lg border border-[var(--border)] self-start sm:self-auto text-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode('editor')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${
+                  viewMode === 'editor'
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
+                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                }`}
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                Editor
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('preview')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${
+                  viewMode === 'preview'
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
+                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Live Preview
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('split')}
+                className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${
+                  viewMode === 'split'
+                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xs'
+                    : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                }`}
+              >
+                <Columns className="w-3.5 h-3.5" />
+                Split View
+              </button>
+            </div>
           </div>
         </div>
 
         {error && (
-          <div className="p-4 text-xs bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg">
+          <div className="p-4 text-xs bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg no-print">
             {error}
           </div>
         )}
 
         <div className={viewMode === 'split' ? 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-start' : 'space-y-6'}>
-          {/* Editor Column */}
+          {/* Editor Column - Hidden on Print so only the invoice prints */}
           {(viewMode === 'editor' || viewMode === 'split') && (
-            <div className={viewMode === 'split' ? 'lg:col-span-6 xl:col-span-5 space-y-6' : 'max-w-4xl mx-auto space-y-6'}>
+            <div className={`no-print ${viewMode === 'split' ? 'lg:col-span-6 xl:col-span-6 space-y-6' : 'max-w-4xl mx-auto space-y-6'}`}>
               {/* Invoice Meta Card */}
               <Card>
                 <CardHeader>
@@ -218,6 +233,35 @@ export default function NewInvoicePage() {
                 </CardHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 space-y-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <label className="text-xs font-semibold text-[var(--foreground)] tracking-wide">
+                        Document Title / Heading
+                      </label>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {['INVOICE', 'TAX INVOICE', 'PROFORMA', 'COMMERCIAL INVOICE', 'BILL OF SALE'].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setDocumentTitle(preset)}
+                            className={`text-[10px] px-2 py-0.5 rounded border transition-colors cursor-pointer font-medium ${
+                              documentTitle.toUpperCase() === preset
+                                ? 'bg-[var(--primary)] text-[var(--primary-foreground)] border-[var(--primary)] shadow-xs'
+                                : 'bg-[var(--surface-secondary)] text-[var(--muted-foreground)] border-[var(--border)] hover:text-[var(--foreground)]'
+                            }`}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <Input
+                      value={documentTitle}
+                      onChange={(e) => setDocumentTitle(e.target.value)}
+                      placeholder="e.g. INVOICE, TAX INVOICE, PROFORMA"
+                    />
+                  </div>
+
                   <div className="md:col-span-2">
                     <label className="text-xs font-semibold text-[var(--foreground)] tracking-wide block mb-1.5">
                       Customer
@@ -294,9 +338,17 @@ export default function NewInvoicePage() {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="text-xs font-semibold text-[var(--foreground)] tracking-wide block mb-1.5">
-                      Template Layout
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-semibold text-[var(--foreground)] tracking-wide">
+                        Template Layout
+                      </label>
+                      <Link
+                        href="/templates"
+                        className="text-[11px] text-[var(--primary)] hover:underline font-medium"
+                      >
+                        Browse & Install Templates →
+                      </Link>
+                    </div>
                     <select
                       value={templateVersionId}
                       onChange={(e) => setTemplateVersionId(e.target.value)}
@@ -333,81 +385,79 @@ export default function NewInvoicePage() {
                   {items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center p-3 sm:p-4 rounded-md bg-[var(--surface-secondary)] border border-[var(--border)]"
+                      className="p-3.5 sm:p-4 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border)] space-y-3 transition-colors"
                     >
-                      <div className="md:col-span-4">
-                        <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
-                          Description
-                        </label>
-                        <Input
-                          placeholder="Item description"
-                          value={item.description}
-                          onChange={(e) => updateItem(idx, 'description', e.target.value)}
-                          required
-                        />
+                      {/* Top row: Description + Line Total + Remove button */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex-1 min-w-0">
+                          <Input
+                            placeholder="Item description or service deliverable..."
+                            value={item.description}
+                            onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="text-right shrink-0 min-w-[80px]">
+                          <span className="text-[10px] text-[var(--muted-foreground)] block">Total</span>
+                          <span className="font-mono font-bold text-xs sm:text-sm text-[var(--foreground)]">
+                            ${((item.quantity * item.unitPrice) * (1 + item.taxRate)).toFixed(2)}
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          type="button"
+                          onClick={() => removeItem(idx)}
+                          disabled={items.length <= 1}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-500/10 shrink-0 h-9 w-9 cursor-pointer"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 md:contents">
-                        <div className="md:col-span-2">
-                          <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
-                            Qty
+                      {/* Bottom row: Quantity, Unit Price, Tax Rate */}
+                      <div className="grid grid-cols-3 gap-2.5 pt-2 border-t border-[var(--border)]/60">
+                        <div>
+                          <label className="text-[10px] sm:text-[11px] font-semibold text-[var(--muted-foreground)] block mb-1">
+                            Quantity
                           </label>
                           <Input
                             type="number"
                             step="any"
                             min="0.01"
-                            placeholder="Qty"
+                            placeholder="1"
                             value={item.quantity}
                             onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
                           />
                         </div>
 
-                        <div className="md:col-span-2">
-                          <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
-                            Rate ($)
+                        <div>
+                          <label className="text-[10px] sm:text-[11px] font-semibold text-[var(--muted-foreground)] block mb-1">
+                            Unit Price ($)
                           </label>
                           <Input
                             type="number"
                             step="0.01"
                             min="0"
-                            placeholder="Unit Price ($)"
+                            placeholder="0.00"
                             value={item.unitPrice}
                             onChange={(e) => updateItem(idx, 'unitPrice', parseFloat(e.target.value) || 0)}
                           />
                         </div>
 
-                        <div className="md:col-span-2">
-                          <label className="text-[11px] font-semibold text-[var(--muted-foreground)] md:hidden block mb-1">
-                            Tax
+                        <div>
+                          <label className="text-[10px] sm:text-[11px] font-semibold text-[var(--muted-foreground)] block mb-1">
+                            Tax (e.g. 0.08)
                           </label>
                           <Input
                             type="number"
                             step="0.01"
                             min="0"
-                            placeholder="Tax (e.g. 0.08)"
+                            placeholder="0.00"
                             value={item.taxRate}
                             onChange={(e) => updateItem(idx, 'taxRate', parseFloat(e.target.value) || 0)}
                           />
-                        </div>
-                      </div>
-
-                      <div className="flex md:contents items-center justify-between pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
-                        <div className="md:col-span-1 md:text-right font-mono font-bold text-xs text-[var(--foreground)]">
-                          <span className="md:hidden text-[var(--muted-foreground)] font-normal mr-2">Total:</span>
-                          ${((item.quantity * item.unitPrice) * (1 + item.taxRate)).toFixed(2)}
-                        </div>
-
-                        <div className="md:col-span-1 text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeItem(idx)}
-                            disabled={items.length <= 1}
-                            className="text-red-500 hover:text-red-600"
-                            aria-label="Remove item"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
                         </div>
                       </div>
                     </div>
@@ -416,23 +466,23 @@ export default function NewInvoicePage() {
 
                 {/* Totals Breakdown */}
                 <div className="mt-6 pt-4 border-t border-[var(--border)] flex justify-end">
-                  <div className="w-full sm:w-72 space-y-2 text-xs">
-                    <div className="flex justify-between text-[var(--muted-foreground)]">
+                  <div className="w-full sm:w-80 space-y-2 text-xs">
+                    <div className="flex justify-between py-0.5 text-[var(--muted-foreground)]">
                       <span>Subtotal:</span>
                       <span className="font-semibold text-[var(--foreground)]">{formatCurrency(subtotal * 100, currency)}</span>
                     </div>
                     {taxTotal > 0 && (
-                      <div className="flex justify-between text-[var(--muted-foreground)]">
+                      <div className="flex justify-between py-0.5 text-[var(--muted-foreground)]">
                         <span>Estimated Tax:</span>
                         <span className="font-semibold text-[var(--foreground)]">{formatCurrency(taxTotal * 100, currency)}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-sm font-bold pt-2 border-t border-[var(--border)] text-[var(--foreground)]">
+                    <div className="flex justify-between py-1 text-sm font-bold border-t border-[var(--border)] text-[var(--foreground)]">
                       <span>Total Amount:</span>
                       <span>{formatCurrency(grandTotal * 100, currency)}</span>
                     </div>
 
-                    <div className="pt-2">
+                    <div className="pt-1.5">
                       <Input
                         label="Amount Paid ($)"
                         type="number"
@@ -443,9 +493,9 @@ export default function NewInvoicePage() {
                       />
                     </div>
 
-                    <div className="flex justify-between text-xs font-bold pt-2 text-[var(--muted-foreground)]">
+                    <div className="flex justify-between py-1 text-xs font-bold pt-2 text-[var(--muted-foreground)] border-t border-[var(--border)]">
                       <span>Balance Due:</span>
-                      <span className={balanceDue > 0 ? 'text-amber-500 font-extrabold' : 'text-emerald-500'}>
+                      <span className={balanceDue > 0 ? 'text-amber-500 font-extrabold' : 'text-emerald-500 font-extrabold'}>
                         {formatCurrency(balanceDue * 100, currency)}
                       </span>
                     </div>
@@ -510,9 +560,10 @@ export default function NewInvoicePage() {
 
           {/* Live Preview Column */}
           {(viewMode === 'preview' || viewMode === 'split') && (
-            <div className={viewMode === 'split' ? 'lg:col-span-6 xl:col-span-7 sticky top-4 self-start' : 'max-w-4xl mx-auto w-full'}>
+            <div className={`${viewMode === 'split' ? 'lg:col-span-6 xl:col-span-6 sticky top-4 self-start' : 'max-w-4xl mx-auto w-full'} print:block print:w-full print:max-w-none print:static print:p-0`}>
               <DocumentPreviewContainer title="Live Invoice Preview">
                 <InvoicePreview
+                  documentTitle={documentTitle}
                   documentNumber="DRAFT"
                   status="draft"
                   issueDate={issueDate}

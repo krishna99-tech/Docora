@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-ring: var(--ring);
+  --color-brand-from: var(--brand-from);
+  --color-brand-to: var(--brand-to);
+  --color-brand-accent: var(--brand-accent);
+}
+
 :root {
   --background: #ffffff;
   --foreground: #111111;
@@ -11,7 +35,7 @@
   --border: #e5e5e5;
   --border-strong: #c9c9c9;
 
-  --primary: #111111;
+  --primary: #0066ff;
   --primary-foreground: #ffffff;
 
   --secondary: #f3f3f3;
@@ -23,7 +47,7 @@
   --accent: #eeeeee;
   --accent-foreground: #111111;
 
-  --ring: #737373;
+  --ring: #0066ff;
 
   --sidebar-background: #fafafa;
   --sidebar-foreground: #171717;
@@ -41,6 +65,8 @@
 
 /* 1. Electric Ocean (Brand Analogous) */
 [data-palette="ocean"] {
+  --primary: #0066ff;
+  --primary-foreground: #ffffff;
   --brand-from: #0066ff;
   --brand-to: #00c6ff;
   --brand-accent: #38bdf8;
@@ -48,10 +74,13 @@
   --brand-subtle: rgba(0, 102, 255, 0.08);
   --brand-border: rgba(0, 102, 255, 0.25);
   --brand-glow: 0 4px 20px -2px rgba(0, 102, 255, 0.35);
+  --ring: #0066ff;
 }
 
 /* 2. Royal Violet (Analogous Purple / Indigo) */
 [data-palette="violet"] {
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
   --brand-from: #7c3aed;
   --brand-to: #a855f7;
   --brand-accent: #c084fc;
@@ -59,10 +88,13 @@
   --brand-subtle: rgba(124, 58, 237, 0.08);
   --brand-border: rgba(124, 58, 237, 0.25);
   --brand-glow: 0 4px 20px -2px rgba(124, 58, 237, 0.35);
+  --ring: #7c3aed;
 }
 
 /* 3. Emerald Mint (Complementary FinTech) */
 [data-palette="emerald"] {
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
   --brand-from: #10b981;
   --brand-to: #0d9488;
   --brand-accent: #34d399;
@@ -70,10 +102,13 @@
   --brand-subtle: rgba(16, 185, 129, 0.08);
   --brand-border: rgba(16, 185, 129, 0.25);
   --brand-glow: 0 4px 20px -2px rgba(16, 185, 129, 0.35);
+  --ring: #10b981;
 }
 
 /* 4. Sunset Ember (Triadic Warm Coral / Orange) */
 [data-palette="sunset"] {
+  --primary: #ea580c;
+  --primary-foreground: #ffffff;
   --brand-from: #ea580c;
   --brand-to: #f43f5e;
   --brand-accent: #fb923c;
@@ -81,10 +116,13 @@
   --brand-subtle: rgba(234, 88, 12, 0.08);
   --brand-border: rgba(234, 88, 12, 0.25);
   --brand-glow: 0 4px 20px -2px rgba(234, 88, 12, 0.35);
+  --ring: #ea580c;
 }
 
 /* 5. Cyber Aurora (Tetradic Neon Cyan / Magenta) */
 [data-palette="aurora"] {
+  --primary: #06b6d4;
+  --primary-foreground: #ffffff;
   --brand-from: #06b6d4;
   --brand-to: #ec4899;
   --brand-accent: #8b5cf6;
@@ -92,10 +130,13 @@
   --brand-subtle: rgba(6, 182, 212, 0.08);
   --brand-border: rgba(6, 182, 212, 0.25);
   --brand-glow: 0 4px 20px -2px rgba(6, 182, 212, 0.35);
+  --ring: #06b6d4;
 }
 
 /* 6. Obsidian Slate (Monochrome Clean) */
 [data-palette="monochrome"] {
+  --primary: #18181b;
+  --primary-foreground: #ffffff;
   --brand-from: #18181b;
   --brand-to: #52525b;
   --brand-accent: #71717a;
@@ -103,6 +144,7 @@
   --brand-subtle: rgba(24, 24, 27, 0.08);
   --brand-border: rgba(24, 24, 27, 0.25);
   --brand-glow: 0 4px 20px -2px rgba(24, 24, 27, 0.2);
+  --ring: #52525b;
 }
 
 .dark {
@@ -116,9 +158,6 @@
   --border: #292929;
   --border-strong: #404040;
 
-  --primary: #ffffff;
-  --primary-foreground: #111111;
-
   --secondary: #222222;
   --secondary-foreground: #fafafa;
 
@@ -128,7 +167,7 @@
   --accent: #262626;
   --accent-foreground: #fafafa;
 
-  --ring: #a3a3a3;
+  --ring: #38bdf8;
 
   --sidebar-background: #0d0d0d;
   --sidebar-foreground: #fafafa;
@@ -136,7 +175,9 @@
 }
 
 .dark[data-palette="monochrome"],
-[data-palette="monochrome"] .dark {
+[data-palette="monochrome"].dark {
+  --primary: #f4f4f5;
+  --primary-foreground: #111111;
   --brand-from: #f4f4f5;
   --brand-to: #a1a1aa;
   --brand-accent: #d4d4d8;
@@ -144,6 +185,7 @@
   --brand-subtle: rgba(255, 255, 255, 0.1);
   --brand-border: rgba(255, 255, 255, 0.2);
   --brand-glow: 0 4px 20px -2px rgba(255, 255, 255, 0.2);
+  --ring: #d4d4d8;
 }
 
 /* Utility classes for palette integration */
@@ -250,15 +292,25 @@ body {
   .print-document-sheet {
     display: block !important;
     position: static !important;
+    box-sizing: border-box !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
     margin: 0 auto !important;
-    padding: 0 !important;
+    padding: 12mm 15mm !important;
     box-shadow: none !important;
     border: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
     background: #ffffff !important;
     color: #111111 !important;
     transform: none !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
   /* Print table optimizations */
@@ -292,9 +344,10 @@ body {
     break-inside: avoid !important;
   }
 
+  /* @page margin 0 suppresses browser URL, timestamp, and page numbers (1/2) */
   @page {
-    size: A4 portrait;
-    margin: 12mm 15mm;
+    size: auto;
+    margin: 0mm;
   }
 }
 

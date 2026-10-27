@@ -3,8 +3,10 @@
 import React from 'react';
 import { Customer, BusinessProfile } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { DocAutomateLogo } from '@/components/ui/doc-automate-logo';
 
 export interface ReceiptPreviewProps {
+  documentTitle?: string;
   documentNumber?: string;
   status?: string;
   issueDate?: string;
@@ -26,6 +28,7 @@ export interface ReceiptPreviewProps {
 }
 
 export function ReceiptPreview({
+  documentTitle = 'Official Receipt',
   documentNumber = 'DRAFT',
   status = 'draft',
   issueDate,
@@ -54,14 +57,11 @@ export function ReceiptPreview({
   return (
     <div
       id="printable-document"
-      className="print-document-sheet bg-white text-[#111111] p-10 font-sans shadow-lg border border-neutral-200 rounded-sm w-[794px] min-h-[1123px] box-border text-[13px] leading-relaxed select-text"
+      className="print-document-sheet bg-white text-[#111111] p-10 font-sans shadow-lg border border-neutral-200 rounded-sm w-[794px] min-h-[1123px] box-border text-[13px] leading-relaxed select-text print:p-0 print:m-0 print:border-none print:rounded-none print:shadow-none print:w-full print:min-h-0 print:max-w-none"
     >
       {/* Top Header */}
-      <div className="flex justify-between items-start border-b-2 border-[#111111] pb-5 mb-6">
+      <div className="flex justify-between items-start border-b-2 border-[#111111] pb-4 mb-5">
         <div className="business-info">
-          <h1 className="text-2xl font-black tracking-tight text-[#111111] mb-1">
-            {business?.businessName || 'Docora Platform'}
-          </h1>
           {business?.address && <p className="text-xs text-[#555555]">{business.address}</p>}
           {business?.phone && <p className="text-xs text-[#555555]">Phone: {business.phone}</p>}
           {business?.email && <p className="text-xs text-[#555555]">Email: {business.email}</p>}
@@ -72,7 +72,7 @@ export function ReceiptPreview({
 
         <div className="text-right">
           <div className="inline-block bg-[#111111] text-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded mb-2">
-            Official Receipt
+            {documentTitle || 'Official Receipt'}
           </div>
           <div className="text-lg font-bold text-[#111111]">#{documentNumber}</div>
           <div className="text-xs text-[#666666] mt-0.5">Date: {displayDate}</div>
@@ -85,7 +85,7 @@ export function ReceiptPreview({
       </div>
 
       {/* Info Grid: Recipient & Payment */}
-      <div className="grid grid-cols-2 gap-6 mb-7">
+      <div className="grid grid-cols-2 gap-6 mb-5">
         <div className="info-box bg-[#f9f9f9] border border-[#e5e5e5] rounded-md p-3.5">
           <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#666666] mb-1.5">
             Received From / Billed To
@@ -250,12 +250,15 @@ export function ReceiptPreview({
       )}
 
       {/* Signature & Authentication Footer */}
-      <div className="mt-10 pt-6 border-t border-[#e5e5e5] flex justify-between items-end text-xs text-[#777777] avoid-break">
-        <div>
-          <p className="font-medium text-[#444444]">
-            {business?.businessName || 'Docora Official'}
-          </p>
-          <p className="text-[11px]">Authorized Financial Receipt</p>
+      <div className="mt-6 pt-4 border-t border-[#e5e5e5] flex justify-between items-end text-xs text-[#777777] avoid-break">
+        <div className="flex items-center gap-3">
+          <DocAutomateLogo variant="icon" size={24} theme="light" />
+          <div>
+            <p className="font-bold text-[#222222] tracking-tight text-sm">
+              {business?.businessName || 'Docora Official'}
+            </p>
+            <p className="text-[11px] text-[#888888]">Authorized Financial Receipt</p>
+          </div>
         </div>
         <div className="text-right">
           <div className="w-48 border-b border-[#111111] mb-1" />

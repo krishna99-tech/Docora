@@ -42,7 +42,7 @@ export function Header({
   const ActionIcon = action?.icon || Plus;
 
   return (
-    <header className="h-16 px-4 sm:px-6 lg:px-8 border-b border-[var(--border)] bg-[var(--surface)] flex items-center justify-between shrink-0 transition-colors z-10 sticky top-0">
+    <header className="h-16 px-4 sm:px-6 lg:px-8 border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-md flex items-center justify-between shrink-0 transition-colors z-20 sticky top-0">
       <div className="flex items-center gap-3 min-w-0 mr-2">
         {/* Mobile Hamburger Menu Toggle */}
         <button

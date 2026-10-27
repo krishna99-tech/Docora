@@ -3,8 +3,10 @@
 import React from 'react';
 import { Customer, BusinessProfile } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { DocAutomateLogo } from '@/components/ui/doc-automate-logo';
 
 export interface InvoicePreviewProps {
+  documentTitle?: string;
   documentNumber?: string;
   status?: string;
   issueDate?: string;
@@ -27,6 +29,7 @@ export interface InvoicePreviewProps {
 }
 
 export function InvoicePreview({
+  documentTitle = 'INVOICE',
   documentNumber = 'DRAFT',
   status = 'draft',
   issueDate,
@@ -59,15 +62,12 @@ export function InvoicePreview({
   return (
     <div
       id="printable-document"
-      className="print-document-sheet bg-white text-[#111111] p-10 font-sans shadow-lg border border-neutral-200 rounded-sm w-[794px] min-h-[1123px] box-border text-[13px] leading-relaxed select-text"
+      className="print-document-sheet bg-white text-[#111111] p-10 font-sans shadow-lg border border-neutral-200 rounded-sm w-[794px] min-h-[1123px] box-border text-[13px] leading-relaxed select-text print:p-0 print:m-0 print:border-none print:rounded-none print:shadow-none print:w-full print:min-h-0 print:max-w-none"
     >
       {/* Top Banner */}
-      <div className="flex justify-between items-start border-b-[3px] border-[#111111] pb-6 mb-6">
+      <div className="flex justify-between items-start border-b-[3px] border-[#111111] pb-4 mb-5">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-[#111111]">
-            {business?.businessName || 'Docora Enterprises'}
-          </h1>
-          <div className="mt-1 text-xs text-[#555555] space-y-0.5">
+          <div className="text-xs text-[#555555] space-y-0.5">
             {business?.address && <p>{business.address}</p>}
             {business?.email && <p>Email: {business.email}</p>}
             {business?.phone && <p>Phone: {business.phone}</p>}
@@ -76,8 +76,8 @@ export function InvoicePreview({
         </div>
 
         <div className="text-right">
-          <div className="text-3xl font-black tracking-wider text-[#111111]">
-            INVOICE
+          <div className="text-3xl font-black tracking-wider text-[#111111] uppercase">
+            {documentTitle || 'INVOICE'}
           </div>
           <div className="text-base font-bold text-[#444444] mt-1 font-mono">
             #{documentNumber}
@@ -286,12 +286,15 @@ export function InvoicePreview({
       )}
 
       {/* Footer */}
-      <div className="mt-10 pt-6 border-t border-[#e5e5e5] flex justify-between items-end text-xs text-[#777777] avoid-break">
-        <div>
-          <p className="font-medium text-[#444444]">
-            {business?.businessName || 'Docora Enterprises'}
-          </p>
-          <p className="text-[11px]">Commercial Invoice Document</p>
+      <div className="mt-6 pt-4 border-t border-[#e5e5e5] flex justify-between items-end text-xs text-[#777777] avoid-break">
+        <div className="flex items-center gap-3">
+          <DocAutomateLogo variant="icon" size={26} theme="light" />
+          <div>
+            <p className="font-bold text-[#222222] tracking-tight text-sm">
+              {business?.businessName || 'Docora Enterprises'}
+            </p>
+            <p className="text-[11px] text-[#888888]">Commercial Invoice Document</p>
+          </div>
         </div>
         <div className="text-right">
           <div className="w-48 border-b border-[#111111] mb-1" />

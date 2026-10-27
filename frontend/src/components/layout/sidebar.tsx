@@ -77,11 +77,12 @@ export function Sidebar() {
   }, [isMobileOpen]);
 
   // Sidebar content markup
+  // Sidebar content markup
   const renderNav = (isMobile = false) => (
-    <div className="flex flex-col justify-between h-full">
-      <div>
+    <div className="flex flex-col justify-between h-full min-h-0">
+      <div className="flex flex-col min-h-0 flex-1">
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 sm:px-5 border-b border-[var(--sidebar-border)]">
+        <div className="h-16 flex items-center justify-between px-4 sm:px-5 border-b border-[var(--sidebar-border)] shrink-0">
           <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden" title="DocAutomate">
             {isTabletCollapsed && !isMobile ? (
               <DocAutomateLogo variant="icon" size={32} />
@@ -93,7 +94,7 @@ export function Sidebar() {
           {isMobile ? (
             <button
               onClick={closeMobile}
-              className="p-1.5 rounded-md hover:bg-[var(--surface-hover)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+              className="p-1.5 rounded-md hover:bg-[var(--surface-hover)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer"
               aria-label="Close menu"
             >
               <X className="w-5 h-5" />
@@ -101,7 +102,7 @@ export function Sidebar() {
           ) : (
             <button
               onClick={toggleTabletCollapse}
-              className="hidden md:flex lg:hidden p-1 rounded-md hover:bg-[var(--surface-hover)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              className="hidden md:flex lg:hidden p-1 rounded-md hover:bg-[var(--surface-hover)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer"
               title={isTabletCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               aria-label="Toggle compact sidebar"
             >
@@ -111,7 +112,7 @@ export function Sidebar() {
         </div>
 
         {/* Quick Action Button */}
-        <div className="p-3">
+        <div className="p-3 shrink-0">
           <Link href="/receipts/new" onClick={() => { if (isMobile) closeMobile(); }}>
             <Button
               variant="gradient"
@@ -129,7 +130,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation items */}
-        <nav className="px-2 sm:px-3 py-1 space-y-1">
+        <nav className="px-2 sm:px-3 py-1 space-y-1 overflow-y-auto flex-1 min-h-0">
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             const Icon = item.icon;
@@ -156,7 +157,7 @@ export function Sidebar() {
       </div>
 
       {/* User Footer & Theme Switcher */}
-      <div className="p-3 sm:p-4 border-t border-[var(--sidebar-border)] flex flex-col gap-2">
+      <div className="p-3 sm:p-4 border-t border-[var(--sidebar-border)] flex flex-col gap-2 shrink-0">
         <div className={cn('flex items-center', isTabletCollapsed && !isMobile ? 'justify-center' : 'justify-between')}>
           {(!isTabletCollapsed || isMobile) && (
             <div className="flex items-center gap-2 overflow-hidden mr-2">
@@ -197,10 +198,10 @@ export function Sidebar() {
 
   return (
     <>
-      {/* 1. Desktop & Tablet Persistent Sidebar */}
+      {/* 1. Desktop & Tablet Persistent Sticky Sidebar */}
       <aside
         className={cn(
-          'hidden md:flex border-r border-[var(--sidebar-border)] bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)] flex-col justify-between shrink-0 min-h-screen transition-all duration-200 z-20',
+          'hidden md:flex border-r border-[var(--sidebar-border)] bg-[var(--sidebar-background)] text-[var(--sidebar-foreground)] flex-col justify-between shrink-0 h-screen sticky top-0 transition-all duration-200 z-20',
           isTabletCollapsed ? 'w-16' : 'w-60 lg:w-64'
         )}
       >

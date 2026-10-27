@@ -14,6 +14,10 @@ import {
   ListFilter,
   Edit3,
   Columns,
+  Printer,
+  ChevronUp,
+  ChevronDown,
+  X,
 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -128,9 +132,113 @@ export default function GeneralPDFGeneratorPage() {
     setSections(sections.filter((_, i) => i !== idx));
   };
 
+  const moveSection = (idx: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && idx === 0) return;
+    if (direction === 'down' && idx === sections.length - 1) return;
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    const updated = [...sections];
+    const temp = updated[idx];
+    updated[idx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    setSections(updated);
+  };
+
   const updateSectionField = (idx: number, field: string, val: any) => {
     const updated = [...sections];
     (updated[idx] as any)[field] = val;
+    setSections(updated);
+  };
+
+  // Table manipulation helpers
+  const updateTableHeader = (sectionIdx: number, headerIdx: number, value: string) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    const headers = [...(sec.headers || [])];
+    headers[headerIdx] = value;
+    sec.headers = headers;
+    updated[sectionIdx] = sec;
+    setSections(updated);
+  };
+
+  const addTableColumn = (sectionIdx: number) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    const headers = [...(sec.headers || [])];
+    const newColName = `Col ${headers.length + 1}`;
+    headers.push(newColName);
+    sec.headers = headers;
+    sec.rows = (sec.rows || []).map((row) => [...row, '']);
+    updated[sectionIdx] = sec;
+    setSections(updated);
+  };
+
+  const removeTableColumn = (sectionIdx: number, headerIdx: number) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    if ((sec.headers || []).length <= 1) return;
+    sec.headers = (sec.headers || []).filter((_, i) => i !== headerIdx);
+    sec.rows = (sec.rows || []).map((row) => row.filter((_, i) => i !== headerIdx));
+    updated[sectionIdx] = sec;
+    setSections(updated);
+  };
+
+  const updateTableCell = (sectionIdx: number, rowIdx: number, colIdx: number, value: string) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    const rows = (sec.rows || []).map((r) => [...r]);
+    if (!rows[rowIdx]) {
+      rows[rowIdx] = Array((sec.headers || []).length).fill('');
+    }
+    rows[rowIdx][colIdx] = value;
+    sec.rows = rows;
+    updated[sectionIdx] = sec;
+    setSections(updated);
+  };
+
+  const addTableRow = (sectionIdx: number) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    const colCount = (sec.headers || []).length || 1;
+    const newRow = Array(colCount).fill('');
+    sec.rows = [...(sec.rows || []), newRow];
+    updated[sectionIdx] = sec;
+    setSections(updated);
+  };
+
+  const removeTableRow = (sectionIdx: number, rowIdx: number) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    sec.rows = (sec.rows || []).filter((_, i) => i !== rowIdx);
+    updated[sectionIdx] = sec;
+    setSections(updated);
+  };
+
+  // Key-Value manipulation helpers
+  const addKeyValuePair = (sectionIdx: number) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    sec.pairs = [...(sec.pairs || []), { key: '', value: '' }];
+    updated[sectionIdx] = sec;
+    setSections(updated);
+  };
+
+  const updateKeyValuePair = (sectionIdx: number, pairIdx: number, field: 'key' | 'value', val: string) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    const pairs = (sec.pairs || []).map((p) => ({ ...p }));
+    if (pairs[pairIdx]) {
+      pairs[pairIdx][field] = val;
+    }
+    sec.pairs = pairs;
+    updated[sectionIdx] = sec;
+    setSections(updated);
+  };
+
+  const removeKeyValuePair = (sectionIdx: number, pairIdx: number) => {
+    const updated = [...sections];
+    const sec = { ...updated[sectionIdx] };
+    sec.pairs = (sec.pairs || []).filter((_, i) => i !== pairIdx);
+    updated[sectionIdx] = sec;
     setSections(updated);
   };
 
@@ -373,57 +481,242 @@ export default function GeneralPDFGeneratorPage() {
                       className="p-3.5 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border)] space-y-3"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
-                          Section {idx + 1}: {sec.type.replace('_', ' ')}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeSection(idx)}
-                          className="h-6 w-6 text-red-500 hover:text-red-600"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+                            Section {idx + 1}: {sec.type.replace('_', ' ')}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            disabled={idx === 0}
+                            onClick={() => moveSection(idx, 'up')}
+                            className="h-6 w-6 text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-30"
+                            title="Move section up"
+                          >
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            disabled={idx === sections.length - 1}
+                            onClick={() => moveSection(idx, 'down')}
+                            className="h-6 w-6 text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-30"
+                            title="Move section down"
+                          >
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeSection(idx)}
+                            className="h-6 w-6 text-red-500 hover:text-red-600"
+                            title="Delete section"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
                       </div>
 
                       {sec.type === 'heading' && (
-                        <Input
-                          placeholder="Heading text"
-                          value={sec.title || ''}
-                          onChange={(e) => updateSectionField(idx, 'title', e.target.value)}
-                        />
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-medium text-[var(--muted-foreground)]">Heading Title</label>
+                          <Input
+                            placeholder="e.g. 1. Financial Performance"
+                            value={sec.title || ''}
+                            onChange={(e) => updateSectionField(idx, 'title', e.target.value)}
+                          />
+                        </div>
                       )}
 
                       {sec.type === 'paragraph' && (
-                        <textarea
-                          rows={3}
-                          placeholder="Paragraph content..."
-                          value={sec.content || ''}
-                          onChange={(e) => updateSectionField(idx, 'content', e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
-                        />
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-medium text-[var(--muted-foreground)]">Paragraph Content</label>
+                          <textarea
+                            rows={3}
+                            placeholder="Enter detailed paragraph content..."
+                            value={sec.content || ''}
+                            onChange={(e) => updateSectionField(idx, 'content', e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                          />
+                        </div>
                       )}
 
                       {sec.type === 'key_value' && (
                         <div className="space-y-2">
-                          <p className="text-[11px] text-[var(--muted-foreground)]">
-                            Pairs (one line per pair in format: Label: Value)
-                          </p>
-                          <textarea
-                            rows={3}
-                            value={(sec.pairs || []).map((p) => `${p.key}: ${p.value}`).join('\n')}
-                            onChange={(e) => {
-                              const pairs = e.target.value
-                                .split('\n')
-                                .filter((l) => l.includes(':'))
-                                .map((l) => {
-                                  const [k, ...rest] = l.split(':');
-                                  return { key: k.trim(), value: rest.join(':').trim() };
-                                });
-                              updateSectionField(idx, 'pairs', pairs);
-                            }}
-                            className="w-full px-3 py-2 text-xs font-mono rounded-md bg-[var(--surface)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none"
-                          />
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-medium text-[var(--muted-foreground)]">
+                              Key-Value Pairs ({sec.pairs?.length || 0})
+                            </span>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="h-6 text-[10px] px-2"
+                              onClick={() => addKeyValuePair(idx)}
+                            >
+                              <Plus className="w-3 h-3 mr-1" />
+                              Add Pair
+                            </Button>
+                          </div>
+
+                          <div className="space-y-2">
+                            {(sec.pairs || []).map((pair, pIdx) => (
+                              <div key={pIdx} className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  className="w-1/3 px-2 py-1.5 text-xs rounded border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                                  placeholder="Key / Label"
+                                  value={pair.key}
+                                  onChange={(e) => updateKeyValuePair(idx, pIdx, 'key', e.target.value)}
+                                />
+                                <span className="text-xs text-[var(--muted-foreground)]">:</span>
+                                <input
+                                  type="text"
+                                  className="flex-1 px-2 py-1.5 text-xs rounded border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                                  placeholder="Value"
+                                  value={pair.value}
+                                  onChange={(e) => updateKeyValuePair(idx, pIdx, 'value', e.target.value)}
+                                />
+                                {(sec.pairs || []).length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeKeyValuePair(idx, pIdx)}
+                                    className="p-1 text-[var(--muted-foreground)] hover:text-red-500 rounded transition-colors"
+                                    title="Remove pair"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {sec.type === 'table' && (
+                        <div className="space-y-3">
+                          {/* Column Headers Section */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-medium text-[var(--muted-foreground)]">
+                              <span>Columns / Table Headers ({(sec.headers || []).length})</span>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-6 text-[10px] px-2"
+                                onClick={() => addTableColumn(idx)}
+                              >
+                                <Plus className="w-3 h-3 mr-1" />
+                                Add Column
+                              </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {(sec.headers || []).map((h, hIdx) => (
+                                <div
+                                  key={hIdx}
+                                  className="flex items-center gap-1.5 bg-[var(--surface)] border border-[var(--border)] rounded px-2.5 py-1 shadow-2xs"
+                                >
+                                  <input
+                                    className="bg-transparent text-xs font-semibold focus:outline-none w-24 sm:w-28 text-[var(--foreground)]"
+                                    value={h}
+                                    onChange={(e) => updateTableHeader(idx, hIdx, e.target.value)}
+                                    placeholder={`Col ${hIdx + 1}`}
+                                  />
+                                  {(sec.headers || []).length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeTableColumn(idx, hIdx)}
+                                      className="text-red-500 hover:text-red-700 hover:bg-red-500/10 p-0.5 rounded transition-colors ml-1"
+                                      title={`Remove column "${h || `Col ${hIdx + 1}`}"`}
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Table Rows & Cells Section */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-medium text-[var(--muted-foreground)]">
+                              <span>Rows Data ({(sec.rows || []).length} rows)</span>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-6 text-[10px] px-2"
+                                onClick={() => addTableRow(idx)}
+                              >
+                                <Plus className="w-3 h-3 mr-1" />
+                                Add Row
+                              </Button>
+                            </div>
+
+                            <div className="overflow-x-auto rounded border border-[var(--border)] bg-[var(--surface)]">
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="border-b border-[var(--border)] bg-[var(--surface-secondary)]">
+                                    {(sec.headers || []).map((h, hIdx) => (
+                                      <th
+                                        key={hIdx}
+                                        className="py-2 px-2.5 text-left font-semibold text-[11px] text-[var(--muted-foreground)]"
+                                      >
+                                        <div className="flex items-center justify-between gap-1">
+                                          <span className="truncate">{h || `Col ${hIdx + 1}`}</span>
+                                          {(sec.headers || []).length > 1 && (
+                                            <button
+                                              type="button"
+                                              onClick={() => removeTableColumn(idx, hIdx)}
+                                              className="text-[var(--muted-foreground)] hover:text-red-500 p-0.5 rounded transition-colors"
+                                              title={`Delete column "${h || `Col ${hIdx + 1}`}"`}
+                                            >
+                                              <X className="w-3 h-3" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      </th>
+                                    ))}
+                                    <th className="py-2 px-2.5 w-10 text-center text-[10px] text-[var(--muted-foreground)] uppercase">
+                                      Action
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(sec.rows || []).map((row, rIdx) => (
+                                    <tr key={rIdx} className="border-b border-[var(--border)]/50 last:border-b-0 hover:bg-[var(--surface-secondary)]/40 transition-colors">
+                                      {(sec.headers || []).map((_, cIdx) => (
+                                        <td key={cIdx} className="p-1">
+                                          <input
+                                            type="text"
+                                            className="w-full px-2 py-1 text-xs bg-transparent border border-transparent focus:border-[var(--primary)] focus:bg-[var(--surface)] rounded transition-all text-[var(--foreground)]"
+                                            placeholder={`Row ${rIdx + 1}, Col ${cIdx + 1}`}
+                                            value={row[cIdx] || ''}
+                                            onChange={(e) => updateTableCell(idx, rIdx, cIdx, e.target.value)}
+                                          />
+                                        </td>
+                                      ))}
+                                      <td className="p-1 text-center">
+                                        <button
+                                          type="button"
+                                          onClick={() => removeTableRow(idx, rIdx)}
+                                          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-500/10 rounded transition-colors"
+                                          title={`Delete Row ${rIdx + 1}`}
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -433,6 +726,16 @@ export default function GeneralPDFGeneratorPage() {
 
               {/* Generate Actions */}
               <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => window.print()}
+                >
+                  <Printer className="w-3.5 h-3.5 mr-1" />
+                  Direct Print
+                </Button>
+
                 <Button
                   type="button"
                   variant="outline"

@@ -18,7 +18,7 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.INTERNAL_API_URL || (process.env.NODE_ENV === "production" ? "http://backend:8087" : "http://127.0.0.1:8087")}/api/:path*`,
+        destination: `${process.env.INTERNAL_API_URL || (process.env.NODE_ENV === "production" ? "http://backend:8087" : "http://100.73.229.66:8087")}/api/:path*`,
       },
     ];
   },
