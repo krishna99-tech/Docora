@@ -60,6 +60,10 @@ class ApiClient {
     return httpClient.getAccessToken();
   }
 
+  getRefreshToken(): string | null {
+    return httpClient.getRefreshToken();
+  }
+
   getActiveWorkspaceId(): string | null {
     return httpClient.getActiveWorkspaceId();
   }

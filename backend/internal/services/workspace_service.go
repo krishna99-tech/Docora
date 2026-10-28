@@ -122,3 +122,7 @@ func (s *WorkspaceService) RemoveMember(ctx context.Context, workspaceID, curren
 
 	return s.workspaceRepo.RemoveMember(ctx, workspaceID, targetUserID)
 }
+
+func (s *WorkspaceService) GetOrCreateDefaultWorkspace(ctx context.Context, userID uuid.UUID, userName string) (*models.Workspace, error) {
+	return s.workspaceRepo.GetOrCreateDefaultWorkspace(ctx, userID, userName)
+}

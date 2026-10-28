@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"docora/backend/internal/middleware"
 	"docora/backend/internal/models"
 	"docora/backend/internal/services"
 
@@ -18,15 +19,30 @@ func NewBillingHandler(billingService *services.BillingService) *BillingHandler 
 	return &BillingHandler{billingService: billingService}
 }
 
-func (h *BillingHandler) GetStatus(c *gin.Context) {
-	wsIDVal, exists := c.Get("workspaceId")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "workspace context required"})
-		return
+func (h *BillingHandler) getWorkspaceID(c *gin.Context) (uuid.UUID, bool) {
+	if wsID, ok := middleware.GetWorkspaceID(c); ok {
+		return wsID, true
 	}
-	wsID, ok := wsIDVal.(uuid.UUID)
+	if wsHeader := c.GetHeader("X-Workspace-ID"); wsHeader != "" {
+		if wsID, err := uuid.Parse(wsHeader); err == nil && wsID != uuid.Nil {
+			return wsID, true
+		}
+	}
+	if wsQuery := c.Query("workspace_id"); wsQuery != "" {
+		if wsID, err := uuid.Parse(wsQuery); err == nil && wsID != uuid.Nil {
+			return wsID, true
+		}
+	}
+	if userID, ok := middleware.GetUserID(c); ok && userID != uuid.Nil {
+		return userID, true
+	}
+	return uuid.Nil, false
+}
+
+func (h *BillingHandler) GetStatus(c *gin.Context) {
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "workspace context required"})
 		return
 	}
 
@@ -44,14 +60,9 @@ func (h *BillingHandler) GetPlans(c *gin.Context) {
 }
 
 func (h *BillingHandler) ChangePlan(c *gin.Context) {
-	wsIDVal, exists := c.Get("workspaceId")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "workspace context required"})
-		return
-	}
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "workspace context required"})
 		return
 	}
 
@@ -70,14 +81,9 @@ func (h *BillingHandler) ChangePlan(c *gin.Context) {
 }
 
 func (h *BillingHandler) ListInvoices(c *gin.Context) {
-	wsIDVal, exists := c.Get("workspaceId")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "workspace context required"})
-		return
-	}
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "workspace context required"})
 		return
 	}
 

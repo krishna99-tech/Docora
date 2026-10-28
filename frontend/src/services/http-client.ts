@@ -110,6 +110,11 @@ export class HttpClient {
       }
     }
 
+    const respWsId = response.headers.get('X-Workspace-ID');
+    if (respWsId && !this.activeWorkspaceId) {
+      this.setActiveWorkspaceId(respWsId);
+    }
+
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}`;
       try {

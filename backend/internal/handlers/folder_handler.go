@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"docora/backend/internal/middleware"
 	"docora/backend/internal/models"
 	"docora/backend/internal/services"
 
@@ -18,9 +19,28 @@ func NewFolderHandler(folderService *services.FolderService) *FolderHandler {
 	return &FolderHandler{folderService: folderService}
 }
 
+func (h *FolderHandler) getWorkspaceID(c *gin.Context) (uuid.UUID, bool) {
+	if wsID, ok := middleware.GetWorkspaceID(c); ok {
+		return wsID, true
+	}
+	if wsHeader := c.GetHeader("X-Workspace-ID"); wsHeader != "" {
+		if wsID, err := uuid.Parse(wsHeader); err == nil && wsID != uuid.Nil {
+			return wsID, true
+		}
+	}
+	if wsQuery := c.Query("workspace_id"); wsQuery != "" {
+		if wsID, err := uuid.Parse(wsQuery); err == nil && wsID != uuid.Nil {
+			return wsID, true
+		}
+	}
+	if userID, ok := middleware.GetUserID(c); ok && userID != uuid.Nil {
+		return userID, true
+	}
+	return uuid.Nil, false
+}
+
 func (h *FolderHandler) List(c *gin.Context) {
-	wsIDVal, _ := c.Get("workspaceId")
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
 		return
@@ -34,8 +54,7 @@ func (h *FolderHandler) List(c *gin.Context) {
 }
 
 func (h *FolderHandler) Create(c *gin.Context) {
-	wsIDVal, _ := c.Get("workspaceId")
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
 		return
@@ -54,8 +73,7 @@ func (h *FolderHandler) Create(c *gin.Context) {
 }
 
 func (h *FolderHandler) Update(c *gin.Context) {
-	wsIDVal, _ := c.Get("workspaceId")
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
 		return
@@ -78,8 +96,7 @@ func (h *FolderHandler) Update(c *gin.Context) {
 }
 
 func (h *FolderHandler) Delete(c *gin.Context) {
-	wsIDVal, _ := c.Get("workspaceId")
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
 		return
@@ -97,8 +114,7 @@ func (h *FolderHandler) Delete(c *gin.Context) {
 }
 
 func (h *FolderHandler) Move(c *gin.Context) {
-	wsIDVal, _ := c.Get("workspaceId")
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
 		return
@@ -116,8 +132,7 @@ func (h *FolderHandler) Move(c *gin.Context) {
 }
 
 func (h *FolderHandler) Tag(c *gin.Context) {
-	wsIDVal, _ := c.Get("workspaceId")
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
 		return
@@ -135,8 +150,7 @@ func (h *FolderHandler) Tag(c *gin.Context) {
 }
 
 func (h *FolderHandler) Archive(c *gin.Context) {
-	wsIDVal, _ := c.Get("workspaceId")
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
 		return
@@ -154,8 +168,7 @@ func (h *FolderHandler) Archive(c *gin.Context) {
 }
 
 func (h *FolderHandler) Compliance(c *gin.Context) {
-	wsIDVal, _ := c.Get("workspaceId")
-	wsID, ok := wsIDVal.(uuid.UUID)
+	wsID, ok := h.getWorkspaceID(c)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid workspace id"})
 		return

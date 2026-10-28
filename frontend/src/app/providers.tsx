@@ -131,6 +131,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        if (!api.getAccessToken() && !api.getRefreshToken()) {
+          setIsLoading(false);
+          return;
+        }
         const currentUser = await api.me();
         setUser(currentUser);
       } catch {

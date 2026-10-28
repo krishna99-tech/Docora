@@ -160,6 +160,7 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 		// Protected endpoints
 		protected := v1.Group("")
 		protected.Use(middleware.Auth(authService))
+		protected.Use(middleware.WorkspaceContext(wsService))
 		{
 			// User Profile alias
 			protected.PUT("/users/me", authHandler.UpdateProfile)
@@ -269,6 +270,8 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			protected.GET("/documents/:id/preview", documentHandler.Preview)
 			protected.DELETE("/documents/:id", documentHandler.Delete)
 			protected.POST("/pdf-generator/generate", documentHandler.CreateGeneralPDF)
+			protected.POST("/documents/general-pdf", documentHandler.CreateGeneralPDF)
+			protected.GET("/documents/general-pdf", documentHandler.List)
 
 			// Templates
 			protected.GET("/templates", templateHandler.List)
@@ -288,6 +291,8 @@ func NewServer(cfg *config.Config, db *repositories.DB) (*Server, error) {
 			// Business Profile
 			protected.GET("/business-profile", businessHandler.GetProfile)
 			protected.PUT("/business-profile", businessHandler.UpdateProfile)
+			protected.GET("/settings/business-profile", businessHandler.GetProfile)
+			protected.PUT("/settings/business-profile", businessHandler.UpdateProfile)
 
 			// SaaS Billing, Plans, and Quotas
 			protected.GET("/billing/status", billingHandler.GetStatus)

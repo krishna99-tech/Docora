@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -43,13 +44,31 @@ func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 		return err
 	}
 
+	// Create default workspace for user
+	wsID := uuid.New()
+	wsName := user.Name + "'s Workspace"
+	wsSlug := fmt.Sprintf("ws-%s", user.ID.String()[:8])
+	wsQuery := `
+		INSERT INTO workspaces (id, name, slug, owner_id, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $5)
+		ON CONFLICT (slug) DO NOTHING
+	`
+	_, _ = r.db.Pool.Exec(ctx, wsQuery, wsID, wsName, wsSlug, user.ID, now)
+
+	memberQuery := `
+		INSERT INTO workspace_members (id, workspace_id, user_id, role, created_at)
+		VALUES ($1, $2, $3, 'owner', $4)
+		ON CONFLICT (workspace_id, user_id) DO NOTHING
+	`
+	_, _ = r.db.Pool.Exec(ctx, memberQuery, uuid.New(), wsID, user.ID, now)
+
 	// Create default business profile for user
 	profileQuery := `
-		INSERT INTO business_profiles (id, user_id, business_name, currency, date_format, created_at, updated_at)
-		VALUES ($1, $2, $3, 'USD', 'YYYY-MM-DD', $4, $4)
+		INSERT INTO business_profiles (id, user_id, workspace_id, business_name, currency, date_format, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, 'USD', 'YYYY-MM-DD', $5, $5)
 		ON CONFLICT (user_id) DO NOTHING
 	`
-	_, _ = r.db.Pool.Exec(ctx, profileQuery, uuid.New(), user.ID, user.Name, now)
+	_, _ = r.db.Pool.Exec(ctx, profileQuery, uuid.New(), user.ID, wsID, user.Name, now)
 
 	return nil
 }

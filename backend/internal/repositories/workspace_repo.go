@@ -167,3 +167,31 @@ func (r *WorkspaceRepository) UpdateMemberRole(ctx context.Context, workspaceID,
 	}
 	return nil
 }
+
+func (r *WorkspaceRepository) GetOrCreateDefaultWorkspace(ctx context.Context, userID uuid.UUID, userName string) (*models.Workspace, error) {
+	workspaces, err := r.GetWorkspacesForUser(ctx, userID)
+	if err == nil && len(workspaces) > 0 {
+		return &workspaces[0], nil
+	}
+
+	trimmedName := userName
+	if trimmedName == "" {
+		trimmedName = "My"
+	}
+	slug := fmt.Sprintf("ws-%s", userID.String()[:8])
+	ws := &models.Workspace{
+		ID:      uuid.New(),
+		Name:    trimmedName + "'s Workspace",
+		Slug:    slug,
+		OwnerID: userID,
+	}
+	if err := r.CreateWorkspace(ctx, ws); err != nil {
+		// In case already created concurrently, try fetching again
+		wsList, listErr := r.GetWorkspacesForUser(ctx, userID)
+		if listErr == nil && len(wsList) > 0 {
+			return &wsList[0], nil
+		}
+		return nil, err
+	}
+	return ws, nil
+}
