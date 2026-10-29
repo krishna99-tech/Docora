@@ -172,7 +172,7 @@ Docora/
    ```
 
 5. Access the applications:
-   - **Web Application**: `http://localhost:3005` (or `http://localhost:8080` via Nginx)
+   - **Web Application**: `http://localhost:3005` (or `http://localhost:9091` via Nginx)
    - **Backend API**: `http://localhost:8087/api/v1`
    - **Health Probe**: `http://localhost:8087/healthz`
    - **Readiness Probe**: `http://localhost:8087/readyz`
