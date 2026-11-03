@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Plus,
@@ -18,6 +18,13 @@ import {
   ChevronUp,
   ChevronDown,
   X,
+  FileCode,
+  Upload,
+  Layers,
+  Sparkles,
+  FileDown,
+  FileUp,
+  RefreshCw,
 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -28,6 +35,11 @@ import { GeneralPDFSection } from '@/types';
 import { PDFViewerModal } from '@/components/pdf/pdf-viewer-modal';
 import { DocumentPreviewContainer } from '@/components/preview/document-preview-container';
 import { GeneralDocPreview } from '@/components/preview/general-doc-preview';
+import {
+  sectionsToMarkdown,
+  markdownToSections,
+  extractTitleMetadata,
+} from '@/lib/markdown-pdf';
 
 export default function GeneralPDFGeneratorPage() {
   const [title, setTitle] = useState('Executive Business Summary');
@@ -83,6 +95,114 @@ export default function GeneralPDFGeneratorPage() {
   const [createdDocNumber, setCreatedDocNumber] = useState<string>('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Input mode preference: visual blocks vs direct markdown
+  const [inputMode, setInputMode] = useState<'visual' | 'markdown'>('visual');
+  const [markdownContent, setMarkdownContent] = useState<string>('');
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Restore saved input mode preference
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('docora_pdf_input_mode') as 'visual' | 'markdown';
+      if (savedMode === 'visual' || savedMode === 'markdown') {
+        setInputMode(savedMode);
+      }
+    }
+  }, []);
+
+  // Initialize markdown content from default sections
+  useEffect(() => {
+    if (!markdownContent && sections.length > 0) {
+      const bodyMd = sectionsToMarkdown(sections);
+      const fullMd = title ? `# ${title}\n${subtitle ? `${subtitle}\n` : ''}\n${bodyMd}` : bodyMd;
+      setMarkdownContent(fullMd);
+    }
+  }, []);
+
+  const switchInputMode = (newMode: 'visual' | 'markdown') => {
+    if (newMode === inputMode) return;
+
+    if (newMode === 'markdown') {
+      // Serialize current visual sections into markdown, prefixing with document title/subtitle
+      const bodyMd = sectionsToMarkdown(sections);
+      const fullMd = title ? `# ${title}\n${subtitle ? `${subtitle}\n` : ''}\n${bodyMd}` : bodyMd;
+      setMarkdownContent(fullMd);
+    } else {
+      // Parse current markdown text into visual sections & extract title
+      const metadata = extractTitleMetadata(markdownContent);
+      if (metadata.title) {
+        setTitle(metadata.title);
+      }
+      if (metadata.subtitle) {
+        setSubtitle(metadata.subtitle);
+      }
+      const parsed = markdownToSections(metadata.title ? metadata.body : markdownContent);
+      if (parsed.length > 0) {
+        setSections(parsed);
+      }
+    }
+
+    setInputMode(newMode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('docora_pdf_input_mode', newMode);
+    }
+  };
+
+  const handleMarkdownChange = (val: string) => {
+    setMarkdownContent(val);
+    const metadata = extractTitleMetadata(val);
+    if (metadata.title) {
+      setTitle(metadata.title);
+    }
+    if (metadata.subtitle) {
+      setSubtitle(metadata.subtitle);
+    }
+    // Parse the body without duplicating the title/subtitle as body sections
+    const contentToParse = metadata.title ? metadata.body : val;
+    const parsed = markdownToSections(contentToParse);
+    setSections(parsed);
+  };
+
+  const handleFileUpload = (file: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (typeof text === 'string') {
+        const metadata = extractTitleMetadata(text);
+        if (metadata.title) {
+          setTitle(metadata.title);
+        }
+        if (metadata.subtitle) {
+          setSubtitle(metadata.subtitle);
+        }
+        setMarkdownContent(text);
+        const parsed = markdownToSections(metadata.title ? metadata.body : text);
+        if (parsed.length > 0) {
+          setSections(parsed);
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDownloadMarkdown = () => {
+    const textToExport = inputMode === 'markdown' && markdownContent ? markdownContent : sectionsToMarkdown(sections);
+    const blob = new Blob([textToExport], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'document'}.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const insertMarkdownSnippet = (snippet: string) => {
+    const newContent = markdownContent ? `${markdownContent.trim()}\n\n${snippet}\n` : `${snippet}\n`;
+    handleMarkdownChange(newContent);
+  };
 
   const { data: businessProfile } = useQuery({
     queryKey: ['business-profile'],
@@ -244,8 +364,26 @@ export default function GeneralPDFGeneratorPage() {
 
   const handleGenerate = async (openPreviewImmediately: boolean) => {
     setError(null);
-    if (!title.trim()) {
+
+    const metadata =
+      inputMode === 'markdown'
+        ? extractTitleMetadata(markdownContent)
+        : { title: undefined, subtitle: undefined, body: '' };
+    const effectiveTitle = (metadata.title || title).trim();
+    const effectiveSubtitle = metadata.subtitle !== undefined ? metadata.subtitle : subtitle;
+
+    if (!effectiveTitle) {
       setError('Please provide a document title');
+      return;
+    }
+
+    const finalSections =
+      inputMode === 'markdown' && markdownContent
+        ? markdownToSections(metadata.title ? metadata.body : markdownContent)
+        : sections;
+
+    if (!finalSections || finalSections.length === 0) {
+      setError('Please provide at least one section or Markdown content');
       return;
     }
 
@@ -253,15 +391,15 @@ export default function GeneralPDFGeneratorPage() {
 
     try {
       const doc = await api.createGeneralPdf({
-        title,
-        subtitle,
+        title: effectiveTitle,
+        subtitle: effectiveSubtitle,
         pageSize,
         orientation,
         margin,
         includeHeader,
         includeFooter,
         includePageNumbers,
-        sections,
+        sections: finalSections,
       });
 
       setCreatedDocId(doc.id);
@@ -446,33 +584,99 @@ export default function GeneralPDFGeneratorPage() {
                 </div>
               </Card>
 
-              {/* Dynamic Content Builder */}
-              <Card>
-                <div className="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-4">
-                  <div>
-                    <CardTitle>Document Sections</CardTitle>
-                    <CardDescription>Assemble structured blocks of text, data, and tables</CardDescription>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <Button size="sm" variant="outline" onClick={() => addSection('heading')} className="text-xs">
-                      <Heading className="w-3.5 h-3.5 mr-1" />
-                      Heading
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => addSection('paragraph')} className="text-xs">
-                      <AlignLeft className="w-3.5 h-3.5 mr-1" />
-                      Text
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => addSection('key_value')} className="text-xs">
-                      <ListFilter className="w-3.5 h-3.5 mr-1" />
-                      Key-Value
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => addSection('table')} className="text-xs">
-                      <TableIcon className="w-3.5 h-3.5 mr-1" />
-                      Table
-                    </Button>
-                  </div>
+              {/* Mode Switcher: Visual Builder vs Direct Markdown */}
+              <div className="flex items-center justify-between flex-wrap gap-2 p-1.5 bg-[var(--surface-secondary)] border border-[var(--border)] rounded-xl">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => switchInputMode('visual')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                      inputMode === 'visual'
+                        ? 'bg-[var(--surface)] text-[var(--foreground)] shadow-xs border border-[var(--border)]'
+                        : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5 text-[var(--primary)]" />
+                    Visual Builder
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => switchInputMode('markdown')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                      inputMode === 'markdown'
+                        ? 'bg-[var(--surface)] text-[var(--foreground)] shadow-xs border border-[var(--border)]'
+                        : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                    }`}
+                  >
+                    <FileCode className="w-3.5 h-3.5 text-[var(--primary)]" />
+                    Markdown (.md)
+                  </button>
                 </div>
+
+                <div className="flex items-center gap-1 text-xs">
+                  {/* Hidden file input for uploading .md file */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleFileUpload(file);
+                      e.target.value = '';
+                    }}
+                    accept=".md,.markdown,.txt"
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] border border-transparent hover:border-[var(--border)] transition-all font-medium text-[11px]"
+                    title="Upload and parse an existing .md file"
+                  >
+                    <FileUp className="w-3.5 h-3.5" />
+                    Import .md
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDownloadMarkdown}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] border border-transparent hover:border-[var(--border)] transition-all font-medium text-[11px]"
+                    title="Download current document as a Markdown file"
+                  >
+                    <FileDown className="w-3.5 h-3.5" />
+                    Export .md
+                  </button>
+                </div>
+              </div>
+
+              {/* Dynamic Content Builder: Visual or Markdown */}
+              {inputMode === 'visual' ? (
+                <Card>
+                  <div className="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-4">
+                    <div>
+                      <CardTitle>Document Sections</CardTitle>
+                      <CardDescription>Assemble structured blocks of text, data, and tables</CardDescription>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Button size="sm" variant="outline" onClick={() => addSection('heading')} className="text-xs">
+                        <Heading className="w-3.5 h-3.5 mr-1" />
+                        Heading
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => addSection('paragraph')} className="text-xs">
+                        <AlignLeft className="w-3.5 h-3.5 mr-1" />
+                        Text
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => addSection('key_value')} className="text-xs">
+                        <ListFilter className="w-3.5 h-3.5 mr-1" />
+                        Key-Value
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => addSection('table')} className="text-xs">
+                        <TableIcon className="w-3.5 h-3.5 mr-1" />
+                        Table
+                      </Button>
+                    </div>
+                  </div>
 
                 <div className="space-y-4">
                   {sections.map((sec, idx) => (
@@ -723,6 +927,126 @@ export default function GeneralPDFGeneratorPage() {
                   ))}
                 </div>
               </Card>
+            ) : (
+              <Card>
+                <div className="flex items-center justify-between pb-3 border-b border-[var(--border)] mb-4">
+                  <div>
+                    <CardTitle>Markdown Document Editor</CardTitle>
+                    <CardDescription>
+                      Write or paste Markdown with instant document preview and PDF compilation
+                    </CardDescription>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono bg-[var(--surface-secondary)] px-2 py-0.5 rounded text-[var(--muted-foreground)] border border-[var(--border)]">
+                      {sections.length} section{sections.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick Insert Snippet Toolbar */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-3 pb-3 border-b border-[var(--border)]/60 text-xs">
+                  <span className="text-[11px] text-[var(--muted-foreground)] font-medium mr-1">Insert:</span>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdownSnippet('## New Section Heading')}
+                    className="px-2 py-1 rounded bg-[var(--surface-secondary)] hover:bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-[11px] font-mono transition-colors"
+                  >
+                    ## Heading
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      insertMarkdownSnippet(
+                        '| Metric | Target | Status |\n| --- | --- | --- |\n| Revenue | $100k | Achieved |\n| Margin | 38.4% | Complete |'
+                      )
+                    }
+                    className="px-2 py-1 rounded bg-[var(--surface-secondary)] hover:bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-[11px] font-mono transition-colors"
+                  >
+                    | Table |
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      insertMarkdownSnippet(
+                        '- **Reporting Period**: Q4 Fiscal 2026\n- **Audited Status**: Verified Complete\n- **Operating Margin**: 38.4%'
+                      )
+                    }
+                    className="px-2 py-1 rounded bg-[var(--surface-secondary)] hover:bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-[11px] font-mono transition-colors"
+                  >
+                    - **Key**: Value
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdownSnippet('Enter detailed descriptive paragraph text here...')}
+                    className="px-2 py-1 rounded bg-[var(--surface-secondary)] hover:bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-[11px] font-mono transition-colors"
+                  >
+                    Paragraph
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdownSnippet('---')}
+                    className="px-2 py-1 rounded bg-[var(--surface-secondary)] hover:bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-[11px] font-mono transition-colors"
+                  >
+                    --- Divider
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertMarkdownSnippet('<br/>')}
+                    className="px-2 py-1 rounded bg-[var(--surface-secondary)] hover:bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)] text-[11px] font-mono transition-colors"
+                  >
+                    &lt;br/&gt; Spacer
+                  </button>
+                </div>
+
+                {/* Markdown Text Area with Drag & Drop */}
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingFile(true);
+                  }}
+                  onDragLeave={() => setIsDraggingFile(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingFile(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleFileUpload(file);
+                  }}
+                  className={`relative rounded-lg transition-all ${
+                    isDraggingFile ? 'ring-2 ring-[var(--primary)] bg-[var(--primary)]/5' : ''
+                  }`}
+                >
+                  <textarea
+                    value={markdownContent}
+                    onChange={(e) => handleMarkdownChange(e.target.value)}
+                    placeholder="# Executive Summary&#10;&#10;Write markdown directly or drag and drop a .md file here...&#10;&#10;## Section Heading&#10;Paragraph content..."
+                    className="w-full h-[480px] p-3 text-xs font-mono rounded-lg bg-[var(--surface-secondary)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-y leading-relaxed"
+                    spellCheck={false}
+                  />
+
+                  {isDraggingFile && (
+                    <div className="absolute inset-0 bg-[var(--surface)]/90 backdrop-blur-xs flex flex-col items-center justify-center border-2 border-dashed border-[var(--primary)] rounded-lg pointer-events-none">
+                      <Upload className="w-8 h-8 text-[var(--primary)] mb-2 animate-bounce" />
+                      <span className="text-xs font-semibold text-[var(--foreground)]">
+                        Drop your .md file to load content
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Status & Syntax Quick Reference */}
+                <div className="mt-2 flex items-center justify-between text-[11px] text-[var(--muted-foreground)] flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span>
+                      Supports <code># Headings</code>, <code>| Tables |</code>, <code>- **Key**: Value</code>, and <code>--- Dividers</code>
+                    </span>
+                  </div>
+                  <div className="font-mono">
+                    {markdownContent.length} chars &bull; {markdownContent ? markdownContent.split('\n').length : 0} lines
+                  </div>
+                </div>
+              </Card>
+            )}
 
               {/* Generate Actions */}
               <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-2">

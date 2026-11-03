@@ -1,10 +1,18 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'DocAutomate | Create, Automate, Deliver',
-  description: 'Enterprise receipt, invoice, and PDF document automation platform.',
+  title: 'DocAutomate – All-in-One Document Operations Platform',
+  description:
+    'Create, process, automate, verify, share, and manage professional documents with DocAutomate.',
+  openGraph: {
+    title: 'DocAutomate – Every Document. One Powerful Platform.',
+    description:
+      'All-in-one Document Operations Platform: document generation, PDF utilities, workflow automation, cryptographic verification, and centralized document management.',
+    type: 'website',
+  },
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -22,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
+        <Script
+          id="docora-theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
