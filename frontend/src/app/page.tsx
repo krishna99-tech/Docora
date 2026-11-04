@@ -4,6 +4,7 @@ import React from 'react';
 import { LandingNavbar } from '@/components/landing/navbar';
 import { LandingHero } from '@/components/landing/hero';
 import { LandingCapabilities } from '@/components/landing/capabilities';
+import { LandingInteractiveDemo } from '@/components/landing/interactive-demo';
 import { LandingHowItWorks } from '@/components/landing/how-it-works';
 import { LandingProductShowcase } from '@/components/landing/product-showcase';
 import { LandingSecurity } from '@/components/landing/security';
@@ -27,25 +28,28 @@ export default function LandingPage() {
         {/* 2. Platform Capabilities (Create, Process, Automate, Verify, Share, Manage) */}
         <LandingCapabilities />
 
-        {/* 3. How It Works (4-Step Timeline Architecture) */}
+        {/* 3. Live Interactive Markdown-to-PDF Playground */}
+        <LandingInteractiveDemo />
+
+        {/* 4. How It Works (4-Step Timeline Architecture) */}
         <LandingHowItWorks />
 
-        {/* 4. Product Showcase (Interactive Tabs: Library, PDF Tools, Templates, Workflows, Verification) */}
+        {/* 5. Product Showcase (Interactive Tabs: Library, PDF Tools, Templates, Workflows, Verification) */}
         <LandingProductShowcase />
 
-        {/* 5. Security & Verification Architecture */}
+        {/* 6. Security & Verification Architecture */}
         <LandingSecurity />
 
-        {/* 6. Tailored Industry Use Cases */}
+        {/* 7. Tailored Industry Use Cases */}
         <LandingUseCases />
 
-        {/* 7. Simple, Transparent Pricing Plans */}
+        {/* 8. Simple, Transparent Pricing Plans */}
         <LandingPricing />
 
-        {/* 8. Frequently Asked Questions (Accessible Accordion) */}
+        {/* 9. Frequently Asked Questions (Accessible Accordion) */}
         <LandingFAQ />
 
-        {/* 9. High-Impact Closing CTA */}
+        {/* 10. High-Impact Closing CTA */}
         <LandingCTA />
       </main>
 

@@ -143,7 +143,7 @@ export function UserProfileMenu() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-bold text-xs text-[var(--foreground)] truncate">
-                {user.name || 'Docora User'}
+                {user.name || 'DocAutomate User'}
               </div>
               <div className="text-[11px] font-mono text-[var(--muted-foreground)] truncate mt-0.5">
                 {user.email}
@@ -250,7 +250,7 @@ export function UserProfileMenu() {
                 <div>
                   <h3 className="font-bold text-base text-[var(--foreground)]">Help & Support</h3>
                   <p className="text-xs text-[var(--muted-foreground)]">
-                    Docora Document & Workflow Automation Platform
+                    DocAutomate Document & Workflow Automation Platform
                   </p>
                 </div>
               </div>
@@ -275,7 +275,7 @@ export function UserProfileMenu() {
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg border border-[var(--border)]">
                   <span className="font-medium text-xs">Support Email</span>
-                  <span className="font-mono text-[11px] text-[var(--muted-foreground)]">support@docora.internal</span>
+                  <span className="font-mono text-[11px] text-[var(--muted-foreground)]">support@docautomate.internal</span>
                 </div>
               </div>
             </div>

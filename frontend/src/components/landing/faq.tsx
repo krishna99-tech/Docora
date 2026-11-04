@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { FadeIn } from './motion-wrapper';
 
 export function LandingFAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -49,7 +51,7 @@ export function LandingFAQ() {
     <section id="faq" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-[#0c0c0c]/50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center space-y-3 mb-14">
+        <FadeIn direction="up" className="text-center space-y-3 mb-14">
           <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             Answers & Clarifications
           </div>
@@ -59,37 +61,46 @@ export function LandingFAQ() {
           <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed">
             Everything you need to know about DocAutomate’s document operations platform.
           </p>
-        </div>
+        </FadeIn>
 
         {/* Accordion List */}
         <div className="space-y-3">
           {faqs.map((faq, idx) => {
             const isOpen = openIndex === idx;
             return (
-              <div
-                key={idx}
-                className="rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-neutral-800/90 overflow-hidden transition-all shadow-2xs"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleFAQ(idx)}
-                  className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-neutral-900 dark:text-white hover:text-neutral-950 dark:hover:text-white transition-colors"
-                  aria-expanded={isOpen}
-                >
-                  <span>{faq.q}</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-neutral-400 shrink-0 transition-transform duration-200 ${
-                      isOpen ? 'rotate-180 text-neutral-900 dark:text-white' : ''
-                    }`}
-                  />
-                </button>
+              <FadeIn key={idx} delay={idx * 0.04} direction="up" distance={12}>
+                <div className="rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-neutral-800/90 overflow-hidden transition-colors shadow-2xs">
+                  <button
+                    type="button"
+                    onClick={() => toggleFAQ(idx)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-neutral-900 dark:text-white hover:text-neutral-950 dark:hover:text-white transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-neutral-400 shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-neutral-900 dark:text-white' : ''
+                      }`}
+                    />
+                  </button>
 
-                {isOpen && (
-                  <div className="px-5 pb-5 pt-1 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed border-t border-neutral-100 dark:border-neutral-800/60 animate-in fade-in duration-150">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 pt-1 text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed border-t border-neutral-100 dark:border-neutral-800/60">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </FadeIn>
             );
           })}
         </div>
@@ -97,4 +108,3 @@ export function LandingFAQ() {
     </section>
   );
 }
-

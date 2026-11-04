@@ -405,6 +405,15 @@ export function LandingNavbar() {
               )}
             </div>
 
+            {/* Live Playground Direct Link */}
+            <a
+              href="#demo"
+              className="px-3 py-1.5 rounded-lg transition-colors hover:text-neutral-950 dark:hover:text-white flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Playground</span>
+            </a>
+
             {/* Pricing Direct Link */}
             <a
               href="#pricing"
@@ -498,6 +507,14 @@ export function LandingNavbar() {
             >
               Workflow Automation
             </Link>
+            <a
+              href="#demo"
+              onClick={closeDropdowns}
+              className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-900 dark:text-white flex items-center gap-2"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Live Playground</span>
+            </a>
             <a
               href="#capabilities"
               onClick={closeDropdowns}

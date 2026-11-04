@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   FolderOpen,
   Layers,
@@ -24,6 +25,7 @@ import {
   Lock,
   GitBranch,
 } from 'lucide-react';
+import { FadeIn } from './motion-wrapper';
 
 export function LandingProductShowcase() {
   const [activeTab, setActiveTab] = useState<
@@ -42,7 +44,7 @@ export function LandingProductShowcase() {
     <section id="showcase" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-[#0c0c0c]/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-3">
+        <FadeIn direction="up" className="text-center max-w-2xl mx-auto space-y-3">
           <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             Interactive Workspace
           </div>
@@ -52,7 +54,7 @@ export function LandingProductShowcase() {
           <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed">
             Switch seamlessly between your documents, PDF utilities, automation graphs, and cryptographic verification scanner.
           </p>
-        </div>
+        </FadeIn>
 
         {/* Tab Navigation Pill Bar */}
         <div className="mt-10 flex items-center justify-center">

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
   ShieldCheck,
   Lock,
@@ -10,6 +11,7 @@ import {
   History,
   CheckCircle2,
 } from 'lucide-react';
+import { FadeIn, StaggerContainer, StaggerItem } from './motion-wrapper';
 
 export function LandingSecurity() {
   const securityFeatures = [
@@ -55,7 +57,7 @@ export function LandingSecurity() {
     <section id="security" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
+        <FadeIn direction="up" className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
             <ShieldCheck className="w-3.5 h-3.5" />
             Security & Integrity Architecture
@@ -66,32 +68,33 @@ export function LandingSecurity() {
           <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed">
             Protect your documents with controlled access, secure sharing, and reliable verification mechanisms.
           </p>
-        </div>
+        </FadeIn>
 
         {/* 6 Security Highlights Grid */}
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StaggerContainer className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {securityFeatures.map((sec, idx) => {
             const Icon = sec.icon;
             return (
-              <div
-                key={idx}
-                className="p-6 rounded-2xl bg-neutral-50/70 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800/80 space-y-3 hover:border-neutral-400 dark:hover:border-neutral-700 transition-colors shadow-2xs"
-              >
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-900 dark:text-white shadow-xs">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-neutral-950 dark:text-white">
-                  {sec.title}
-                </h3>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                  {sec.description}
-                </p>
-              </div>
+              <StaggerItem key={idx}>
+                <motion.div
+                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                  className="h-full p-6 rounded-2xl bg-neutral-50/70 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800/80 space-y-3 hover:border-neutral-400 dark:hover:border-neutral-700 transition-colors shadow-2xs"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-900 dark:text-white shadow-xs">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-neutral-950 dark:text-white">
+                    {sec.title}
+                  </h3>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                    {sec.description}
+                  </p>
+                </motion.div>
+              </StaggerItem>
             );
           })}
-        </div>
+        </StaggerContainer>
       </div>
     </section>
   );
 }
-

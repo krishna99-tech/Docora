@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/app/providers';
 import {
   ArrowRight,
@@ -35,28 +36,48 @@ export function LandingHero() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Hero Copy */}
+        {/* Hero Copy with Motion */}
         <div className="text-center max-w-3xl mx-auto space-y-6">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs">
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-100 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xs"
+          >
             <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>DocAutomate 2.0 &bull; Every Document. One Powerful Platform.</span>
-          </div>
+          </motion.div>
 
           {/* Heading */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-neutral-950 dark:text-white leading-[1.12]">
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-neutral-950 dark:text-white leading-[1.12]"
+          >
             Your Documents. Your Workflow.{' '}
             <span className="text-neutral-500 dark:text-neutral-400">One Platform.</span>
-          </h1>
+          </motion.h1>
 
           {/* Supporting text */}
-          <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed font-normal">
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed font-normal"
+          >
             Create, process, automate, verify, and manage documents effortlessly.
             DocAutomate brings every document operation together in one powerful workspace.
-          </p>
+          </motion.p>
 
           {/* CTAs */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
+          >
             <Link
               href={user ? '/dashboard' : '/register'}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-sm bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
@@ -66,22 +87,32 @@ export function LandingHero() {
             </Link>
 
             <a
-              href="#capabilities"
+              href="#demo"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-sm bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/70 transition-all active:scale-[0.98]"
             >
-              Explore Features
-              <ChevronRight className="w-4 h-4 text-neutral-400" />
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              Try Live Playground
             </a>
-          </div>
+          </motion.div>
 
           {/* Trust Statement */}
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 pt-1 font-medium">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="text-xs text-neutral-500 dark:text-neutral-400 pt-1 font-medium"
+          >
             Everything you need to manage documents, built into one platform.
-          </p>
+          </motion.p>
         </div>
 
-        {/* Hero Visual: Interactive SaaS Dashboard Component (NOT a static screenshot!) */}
-        <div className="mt-14 max-w-5xl mx-auto">
+        {/* Hero Visual: Interactive SaaS Dashboard Component with Motion */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.35, ease: [0.21, 0.47, 0.32, 0.98] }}
+          className="mt-14 max-w-5xl mx-auto"
+        >
           <div className="relative rounded-2xl bg-neutral-950/5 dark:bg-white/5 p-2 sm:p-3 ring-1 ring-neutral-200/80 dark:ring-neutral-800 shadow-2xl backdrop-blur-xs">
             <div className="rounded-xl bg-white dark:bg-[#111111] border border-neutral-200/90 dark:border-neutral-800 overflow-hidden text-neutral-900 dark:text-neutral-100">
               {/* Fake Dashboard Topbar */}
@@ -285,7 +316,7 @@ export function LandingHero() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

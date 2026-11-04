@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Check, ArrowRight } from 'lucide-react';
+import { FadeIn, StaggerContainer, StaggerItem } from './motion-wrapper';
 
 export function LandingPricing() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
@@ -73,7 +75,7 @@ export function LandingPricing() {
     <section id="pricing" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-4">
+        <FadeIn direction="up" className="text-center max-w-2xl mx-auto space-y-4">
           <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             Transparent Pricing
           </div>
@@ -114,124 +116,125 @@ export function LandingPricing() {
               </button>
             </div>
           </div>
-        </div>
+        </FadeIn>
 
         {/* 3 Pricing Cards */}
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <StaggerContainer className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
           {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`relative rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-200 ${
-                plan.highlighted
-                  ? 'bg-neutral-950 text-white dark:bg-neutral-900 dark:text-white border-2 border-neutral-950 dark:border-white/30 shadow-xl'
-                  : 'bg-white text-neutral-900 dark:bg-[#121212] dark:text-neutral-100 border border-neutral-200 dark:border-neutral-800 shadow-xs hover:border-neutral-400 dark:hover:border-neutral-600'
-              }`}
-            >
-              {plan.badge && (
-                <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white shadow-xs">
-                  {plan.badge}
-                </div>
-              )}
-
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xl font-bold">{plan.name}</h3>
-                  <p
-                    className={`text-xs mt-1 leading-relaxed ${
-                      plan.highlighted
-                        ? 'text-neutral-300'
-                        : 'text-neutral-500 dark:text-neutral-400'
-                    }`}
-                  >
-                    {plan.tagline}
-                  </p>
-                </div>
-
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-4xl font-black tracking-tight">{plan.price}</span>
-                  <span
-                    className={`text-xs ${
-                      plan.highlighted
-                        ? 'text-neutral-400'
-                        : 'text-neutral-500 dark:text-neutral-400'
-                    }`}
-                  >
-                    {plan.period}
-                  </span>
-                </div>
-
-                <div className="space-y-2.5 pt-4 border-t border-neutral-200/40 dark:border-neutral-800">
-                  <div
-                    className={`text-xs font-bold uppercase tracking-wider ${
-                      plan.highlighted
-                        ? 'text-neutral-300'
-                        : 'text-neutral-500 dark:text-neutral-400'
-                    }`}
-                  >
-                    Included Capabilities
+            <StaggerItem key={plan.name} className="h-full">
+              <motion.div
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className={`relative h-full rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-colors ${
+                  plan.highlighted
+                    ? 'bg-neutral-950 text-white dark:bg-neutral-900 dark:text-white border-2 border-neutral-950 dark:border-white/30 shadow-xl'
+                    : 'bg-white text-neutral-900 dark:bg-[#121212] dark:text-neutral-100 border border-neutral-200 dark:border-neutral-800 shadow-xs hover:border-neutral-400 dark:hover:border-neutral-600'
+                }`}
+              >
+                {plan.badge && (
+                  <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white shadow-xs">
+                    {plan.badge}
                   </div>
-                  <ul className="space-y-2 text-xs">
-                    {plan.features.map((feat, fIdx) => (
-                      <li key={fIdx} className="flex items-start gap-2">
-                        <Check
-                          className={`w-4 h-4 shrink-0 mt-0.5 ${
-                            plan.highlighted ? 'text-emerald-400' : 'text-emerald-500'
-                          }`}
-                        />
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
+                )}
 
-                  {plan.plannedFeatures.length > 0 && (
-                    <div className="pt-3 mt-3 border-t border-neutral-200/20 dark:border-neutral-800 space-y-2">
-                      <div
-                        className={`text-[10px] font-bold uppercase tracking-wider ${
-                          plan.highlighted
-                            ? 'text-neutral-400'
-                            : 'text-neutral-400'
-                        }`}
-                      >
-                        Upcoming Roadmap
-                      </div>
-                      <ul className="space-y-1.5 text-xs">
-                        {plan.plannedFeatures.map((pFeat, pIdx) => (
-                          <li
-                            key={pIdx}
-                            className={`flex items-start gap-2 italic ${
-                              plan.highlighted
-                                ? 'text-neutral-400'
-                                : 'text-neutral-500 dark:text-neutral-400'
-                            }`}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
-                            <span>{pFeat}</span>
-                          </li>
-                        ))}
-                      </ul>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-xl font-bold">{plan.name}</h3>
+                    <p
+                      className={`text-xs mt-1 leading-relaxed ${
+                        plan.highlighted
+                          ? 'text-neutral-300'
+                          : 'text-neutral-500 dark:text-neutral-400'
+                      }`}
+                    >
+                      {plan.tagline}
+                    </p>
+                  </div>
+
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-4xl font-black tracking-tight">{plan.price}</span>
+                    <span
+                      className={`text-xs ${
+                        plan.highlighted
+                          ? 'text-neutral-400'
+                          : 'text-neutral-500 dark:text-neutral-400'
+                      }`}
+                    >
+                      {plan.period}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5 pt-4 border-t border-neutral-200/40 dark:border-neutral-800">
+                    <div
+                      className={`text-xs font-bold uppercase tracking-wider ${
+                        plan.highlighted
+                          ? 'text-neutral-300'
+                          : 'text-neutral-500 dark:text-neutral-400'
+                      }`}
+                    >
+                      Included Capabilities
                     </div>
-                  )}
-                </div>
-              </div>
+                    <ul className="space-y-2 text-xs">
+                      {plan.features.map((feat, fIdx) => (
+                        <li key={fIdx} className="flex items-start gap-2">
+                          <Check
+                            className={`w-4 h-4 shrink-0 mt-0.5 ${
+                              plan.highlighted ? 'text-emerald-400' : 'text-emerald-500'
+                            }`}
+                          />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-              <div className="pt-6 mt-6">
-                <Link
-                  href={plan.ctaHref}
-                  className={`w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all shadow-xs ${
-                    plan.highlighted
-                      ? 'bg-white text-neutral-950 hover:bg-neutral-100 dark:bg-white dark:text-neutral-950'
-                      : 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100'
-                  }`}
-                >
-                  {plan.ctaLabel}
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
+                    {plan.plannedFeatures.length > 0 && (
+                      <div className="pt-3 mt-3 border-t border-neutral-200/20 dark:border-neutral-800 space-y-2">
+                        <div
+                          className={`text-[10px] font-bold uppercase tracking-wider ${
+                            plan.highlighted
+                              ? 'text-neutral-400'
+                              : 'text-neutral-400'
+                          }`}
+                        >
+                          Upcoming Roadmap
+                        </div>
+                        <ul className="space-y-1.5 text-xs">
+                          {plan.plannedFeatures.map((pFeat, pIdx) => (
+                            <li
+                              key={pIdx}
+                              className={`flex items-start gap-2 italic ${
+                                plan.highlighted
+                                  ? 'text-neutral-400'
+                                  : 'text-neutral-500 dark:text-neutral-400'
+                              }`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
+                              <span>{pFeat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-6">
+                  <Link
+                    href={plan.ctaHref}
+                    className={`w-full inline-flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all shadow-xs ${
+                      plan.highlighted
+                        ? 'bg-white text-neutral-950 hover:bg-neutral-100 dark:bg-white dark:text-neutral-950'
+                        : 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100'
+                    }`}
+                  >
+                    {plan.ctaLabel}
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </section>
   );
 }
-
