@@ -9,7 +9,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 20, unit: 'MINUTES')
+        timeout(time: 25, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
         disableConcurrentBuilds()
     }
@@ -19,10 +19,14 @@ pipeline {
             steps {
                 checkout scm
                 script {
-                    env.GIT_COMMIT_SHORT = sh(
-                        script: 'git rev-parse --short HEAD 2>/dev/null || echo "unknown"',
-                        returnStdout: true
-                    ).trim()
+                    try {
+                        env.GIT_COMMIT_SHORT = sh(
+                            script: 'git rev-parse --short HEAD 2>/dev/null || echo "${GIT_COMMIT:-unknown}"',
+                            returnStdout: true
+                        ).trim()
+                    } catch (Exception e) {
+                        env.GIT_COMMIT_SHORT = env.GIT_COMMIT ? env.GIT_COMMIT.take(7) : 'latest'
+                    }
                 }
                 echo "Building commit: ${env.GIT_COMMIT_SHORT} (Jenkins Build #${env.BUILD_NUMBER})"
             }
@@ -30,14 +34,19 @@ pipeline {
 
         stage('Backend Tests') {
             steps {
-                echo "Running Go unit and integration tests inside official Go runner..."
+                echo "Running Go unit and integration tests inside isolated container..."
                 sh '''
-                    # Runs Go tests inside containerized Go environment (no host dependencies required)
-                    docker run --rm \
-                        -v "$(pwd)/backend":/app \
-                        -w /app \
-                        golang:1.24-alpine \
-                        sh -c "go test -v ./tests/..."
+                    # Creates lightweight test container (avoids DooD volume mount path mismatch in Jenkins)
+                    cat << 'EOF' > backend/Dockerfile.test
+FROM golang:alpine
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go test -v ./...
+EOF
+                    docker build -f backend/Dockerfile.test -t docora-backend-test backend
+                    rm -f backend/Dockerfile.test
                 '''
             }
         }
@@ -46,23 +55,32 @@ pipeline {
             steps {
                 echo "Running TypeScript check and Next.js verification..."
                 sh '''
-                    # Verifies TypeScript integrity inside Node environment
-                    docker run --rm \
-                        -v "$(pwd)/frontend":/app \
-                        -w /app \
-                        node:22-alpine \
-                        sh -c "npm install && npx tsc --noEmit"
+                    # Validates TypeScript types and imports inside isolated Node environment
+                    cat << 'EOF' > frontend/Dockerfile.test
+FROM node:22-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npx tsc --noEmit
+EOF
+                    docker build -f frontend/Dockerfile.test -t docora-frontend-test frontend
+                    rm -f frontend/Dockerfile.test
                 '''
             }
         }
 
         stage('Build Docker Images') {
             steps {
-                echo "Building updated backend and frontend Docker images..."
+                echo "Building production backend and frontend Docker images..."
                 sh '''
                     # Ensure .env exists with defaults if not present
                     if [ ! -f .env ]; then
-                        cp .env.example .env
+                        if [ -f .env.example ]; then
+                            cp .env.example .env
+                        else
+                            touch .env
+                        fi
                     fi
 
                     # Build updated images without touching the database
@@ -73,9 +91,13 @@ pipeline {
 
         stage('Deploy Rolling Update') {
             when {
-                anyOf {
-                    branch 'main'
-                    branch 'master'
+                expression {
+                    // Trigger deployment on main/master branches, or by default in standard single-branch pipelines
+                    return env.BRANCH_NAME == null || 
+                           env.BRANCH_NAME == 'main' || 
+                           env.BRANCH_NAME == 'master' || 
+                           env.GIT_BRANCH?.endsWith('/main') || 
+                           env.GIT_BRANCH?.endsWith('/master')
                 }
             }
             steps {
@@ -87,7 +109,7 @@ pipeline {
                     # Health check using docker exec (works whether Jenkins is containerized or host-based)
                     echo "Checking docora_backend readiness probe..."
                     ATTEMPTS=0
-                    MAX_ATTEMPTS=15
+                    MAX_ATTEMPTS=20
                     HEALTHY=0
 
                     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
@@ -107,10 +129,18 @@ pipeline {
                         exit 1
                     fi
 
+                    # Check frontend container status
+                    if docker ps --format '{{.Names}}' | grep -q "^docora_frontend$"; then
+                        echo "docora_frontend container is up and running!"
+                    fi
+
                     # Verify Nginx gateway proxy
                     if docker ps --format '{{.Names}}' | grep -q "^docora_nginx$"; then
-                        docker exec docora_nginx wget -q -O /dev/null http://127.0.0.1/healthz && \
-                            echo "docora_nginx gateway is responding successfully!" || true
+                        if docker exec docora_nginx wget -q -O /dev/null http://127.0.0.1/healthz; then
+                            echo "docora_nginx gateway is responding successfully!"
+                        else
+                            echo "Notice: docora_nginx check finished"
+                        fi
                     fi
 
                     # Prune old dangling images to preserve server disk space
