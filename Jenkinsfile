@@ -137,8 +137,11 @@ EOF
                         echo "docora_frontend container is up and running!"
                     fi
 
-                    # Verify Nginx gateway proxy
+                    # Gracefully reload Nginx to refresh Docker bridge IP routing
                     if docker ps --format '{{.Names}}' | grep -q "^docora_nginx$"; then
+                        echo "Reloading docora_nginx upstream proxy..."
+                        docker exec docora_nginx nginx -s reload || true
+                        sleep 1
                         if docker exec docora_nginx wget -q -O /dev/null http://127.0.0.1/healthz; then
                             echo "docora_nginx gateway is responding successfully!"
                         else
