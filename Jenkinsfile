@@ -74,14 +74,8 @@ EOF
             steps {
                 echo "Building production backend and frontend Docker images..."
                 sh '''
-                    # Ensure .env exists with defaults if not present
-                    if [ ! -f .env ]; then
-                        if [ -f .env.example ]; then
-                            cp .env.example .env
-                        else
-                            touch .env
-                        fi
-                    fi
+                    # Always sync .env from .env.example (enforcing BACKEND_PORT=8087, NGINX_PORT=9091)
+                    cp -f .env.example .env
 
                     # Build updated images without touching the database
                     docker compose build backend frontend
@@ -103,13 +97,17 @@ EOF
             steps {
                 echo "Applying zero-downtime rolling update to existing containers..."
                 sh '''
-                    # Gracefully restart backend & frontend with new images (Postgres remains untouched)
-                    docker compose up -d --no-deps backend frontend
+                    # Ensure .env is synchronized with production ports
+                    cp -f .env.example .env
+
+                    # Gracefully restart backend with new image first (Postgres remains untouched)
+                    echo "Deploying updated docora_backend container on port 8087..."
+                    docker compose up -d --no-deps backend
 
                     # Health check using docker exec (works whether Jenkins is containerized or host-based)
                     echo "Checking docora_backend readiness probe..."
                     ATTEMPTS=0
-                    MAX_ATTEMPTS=20
+                    MAX_ATTEMPTS=25
                     HEALTHY=0
 
                     while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
@@ -129,7 +127,12 @@ EOF
                         exit 1
                     fi
 
-                    # Check frontend container status
+                    # Now deploy updated frontend with no-deps (backend is already confirmed healthy)
+                    echo "Deploying updated docora_frontend container..."
+                    docker compose up -d --no-deps frontend
+
+                    # Verify frontend container status
+                    sleep 3
                     if docker ps --format '{{.Names}}' | grep -q "^docora_frontend$"; then
                         echo "docora_frontend container is up and running!"
                     fi
