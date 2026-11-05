@@ -17,14 +17,17 @@ export default function ErrorBoundaryPage({
     console.error('Docora application runtime error:', error);
   }, [error]);
 
-  const sanitizedDigest = error.digest ? `Reference ID: ${error.digest}` : undefined;
+  const diagnosticDetails = {
+    message: error.message || 'An unexpected runtime error occurred.',
+    digest: error.digest || 'N/A',
+  };
 
   return (
     <ErrorLayout
       statusCode="500"
-      badgeLabel="Server Error"
+      badgeLabel="Application Error"
       title="Something Went Wrong"
-      description="An unexpected error occurred while processing your document request. Our automated diagnostics have recorded the incident."
+      description="An unexpected error occurred while processing your request. You can retry the operation or return to the dashboard."
       illustration={<Illustration500 className="w-44 h-44 sm:w-52 sm:h-52" />}
       primaryAction={{
         label: 'Try Again',
@@ -35,7 +38,7 @@ export default function ErrorBoundaryPage({
         label: 'Go to Dashboard',
         href: '/dashboard',
       }}
-      diagnosticDetails={sanitizedDigest}
+      diagnosticDetails={diagnosticDetails}
     />
   );
 }

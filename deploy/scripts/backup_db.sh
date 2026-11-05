@@ -4,8 +4,8 @@ set -eo pipefail
 
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
-DB_USER="${DB_USER:-postgres}"
-DB_NAME="${DB_NAME:-docora}"
+DB_USER="${DB_USER:-${POSTGRES_USER:-docora_user}}"
+DB_NAME="${DB_NAME:-${POSTGRES_DB:-docora_db}}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/docora}"
 RETENTION_DAYS="${RETENTION_DAYS:-30}"
 

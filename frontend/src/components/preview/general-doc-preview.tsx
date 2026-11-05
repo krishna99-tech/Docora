@@ -17,6 +17,7 @@ export interface GeneralDocPreviewProps {
   sections: GeneralPDFSection[];
   business?: BusinessProfile | null;
   documentNumber?: string;
+  defaultPageViewMode?: 'all' | 'single';
 }
 
 /**
@@ -95,6 +96,7 @@ export function GeneralDocPreview({
   sections = [],
   business,
   documentNumber = 'DOC-PREVIEW',
+  defaultPageViewMode = 'single',
 }: GeneralDocPreviewProps) {
   const currentDate = formatDate(new Date().toISOString());
 
@@ -102,9 +104,23 @@ export function GeneralDocPreview({
   const pages = useMemo(() => paginateSections(sections), [sections]);
   const totalPages = pages.length;
 
-  // Pagination view mode: 'all' (all pages stacked in a continuous scroll) or 'single' (focused flip page)
+  // Pagination view mode: 'single' (focused flip page, default) or 'all' (stacked scroll)
   const [activePage, setActivePage] = useState<number>(0);
-  const [pageViewMode, setPageViewMode] = useState<'all' | 'single'>('all');
+  const [pageViewMode, setPageViewMode] = useState<'all' | 'single'>(defaultPageViewMode);
+
+  // Sync if defaultPageViewMode changes
+  React.useEffect(() => {
+    if (defaultPageViewMode) {
+      setPageViewMode(defaultPageViewMode);
+    }
+  }, [defaultPageViewMode]);
+
+  // Keep active page within bounds if content length changes
+  React.useEffect(() => {
+    if (activePage >= totalPages && totalPages > 0) {
+      setActivePage(totalPages - 1);
+    }
+  }, [totalPages, activePage]);
 
   return (
     <div id="printable-document" className="w-full flex flex-col items-center select-text">
@@ -230,8 +246,8 @@ export function GeneralDocPreview({
                       )}
                     </div>
                     <div className="text-right text-xs text-[#666666]">
-                      <div className="font-bold text-[#111111] font-mono">#{documentNumber}</div>
-                      <div>{currentDate}</div>
+                      <div suppressHydrationWarning className="font-bold text-[#111111] font-mono">#{documentNumber}</div>
+                      <div suppressHydrationWarning>{currentDate}</div>
                       <div className="text-[10px] uppercase tracking-wider text-[#888888]">
                         {business?.businessName || 'Docora Structured Document'}
                       </div>
@@ -244,7 +260,7 @@ export function GeneralDocPreview({
                     <span className="font-semibold text-[#111111] truncate max-w-[400px]">
                       {title || 'Document'} <span className="text-[#888888] font-normal">(continued)</span>
                     </span>
-                    <span className="font-mono text-[11px]">#{documentNumber}</span>
+                    <span suppressHydrationWarning className="font-mono text-[11px]">#{documentNumber}</span>
                   </div>
                 )}
 

@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { FadeIn, StaggerContainer, StaggerItem } from './motion-wrapper';
+import { BackgroundGrid } from './background-grid';
 
 export function LandingCapabilities() {
   const capabilities = [
@@ -26,6 +27,7 @@ export function LandingCapabilities() {
       icon: FileText,
       accentColor: 'text-blue-500',
       bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+      gradient: 'from-blue-500/40 via-cyan-500/40 to-indigo-500/40',
       features: [
         'Invoices, receipts, quotations, estimates, and general PDFs',
         'Visual section builder and direct Markdown (.md) input',
@@ -43,6 +45,7 @@ export function LandingCapabilities() {
       icon: Layers,
       accentColor: 'text-purple-500',
       bgColor: 'bg-purple-50 dark:bg-purple-950/30',
+      gradient: 'from-purple-500/40 via-pink-500/40 to-indigo-500/40',
       features: [
         'Merge multiple PDFs into a single unified binder',
         'Split documents by page ranges or extract key pages',
@@ -60,6 +63,7 @@ export function LandingCapabilities() {
       icon: Workflow,
       accentColor: 'text-amber-500',
       bgColor: 'bg-amber-50 dark:bg-amber-950/30',
+      gradient: 'from-amber-500/40 via-orange-500/40 to-yellow-500/40',
       features: [
         'Visual drag-and-drop workflow graph builder',
         'Configurable multi-stage review and approval rules',
@@ -77,6 +81,7 @@ export function LandingCapabilities() {
       icon: ShieldCheck,
       accentColor: 'text-emerald-500',
       bgColor: 'bg-emerald-50 dark:bg-emerald-950/30',
+      gradient: 'from-emerald-500/40 via-teal-500/40 to-cyan-500/40',
       features: [
         'SHA-256 cryptographic hash fingerprints for each file',
         'Scannable QR codes embedded directly onto finalized PDFs',
@@ -94,6 +99,7 @@ export function LandingCapabilities() {
       icon: Share2,
       accentColor: 'text-indigo-500',
       bgColor: 'bg-indigo-50 dark:bg-indigo-950/30',
+      gradient: 'from-indigo-500/40 via-blue-500/40 to-purple-500/40',
       features: [
         'Time-bounded expiring secure sharing links',
         'Optional password protection on external access',
@@ -111,6 +117,7 @@ export function LandingCapabilities() {
       icon: FolderOpen,
       accentColor: 'text-rose-500',
       bgColor: 'bg-rose-50 dark:bg-rose-950/30',
+      gradient: 'from-rose-500/40 via-pink-500/40 to-purple-500/40',
       features: [
         'Fast keyword search with category and date filtering',
         'Multi-version document history and instant rollback',
@@ -122,15 +129,25 @@ export function LandingCapabilities() {
   ];
 
   return (
-    <section id="capabilities" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-[#0c0c0c]/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="capabilities" className="relative py-20 md:py-28 border-t border-neutral-200/80 dark:border-neutral-800 bg-neutral-50/60 dark:bg-[#0c0c0c]/70 overflow-hidden">
+      {/* Top Mixed Aurora Border Beam */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 max-w-5xl h-[1.5px] bg-gradient-to-r from-transparent via-blue-500/60 via-purple-500/60 via-emerald-500/60 via-amber-500/60 to-transparent pointer-events-none" />
+
+      {/* Architectural Linear Squares Grid with Multi-Orb Mixed Aurora Glow */}
+      <BackgroundGrid variant="squares" size={36} glow="mixed" fade="radial" opacity={0.8} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <FadeIn direction="up" className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-            Platform Capabilities
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/80 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700/80 shadow-2xs backdrop-blur-xs">
+            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-rose-500" />
+            <span>Platform Capabilities</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-950 dark:text-white">
-            Everything Your Documents Need.
+            Everything Your Documents Need.{' '}
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-rose-600 dark:from-blue-400 dark:via-purple-400 dark:to-rose-400 bg-clip-text text-transparent">
+              Unified.
+            </span>
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed">
             One platform to handle the complete document lifecycle — from initial composition and PDF transformation to automated approval routing, verification, and long-term storage.
@@ -145,12 +162,17 @@ export function LandingCapabilities() {
               <StaggerItem key={cap.id}>
                 <motion.div
                   whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  className="group relative h-full rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200 dark:border-neutral-800/80 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors shadow-xs hover:shadow-md"
+                  className="group relative h-full rounded-2xl bg-white dark:bg-[#121212] border border-neutral-200/90 dark:border-neutral-800/80 p-6 sm:p-7 flex flex-col justify-between hover:border-neutral-400 dark:hover:border-neutral-600 transition-all shadow-xs hover:shadow-lg"
                 >
+                  {/* Subtle Gradient Glow Ring on Hover */}
+                  <div
+                    className={`absolute -inset-[1px] rounded-2xl bg-gradient-to-br ${cap.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10 blur-xs`}
+                  />
+
                   <div className="space-y-4">
                     {/* Icon & Title Header */}
                     <div className="flex items-center justify-between">
-                      <div className={`w-10 h-10 rounded-xl ${cap.bgColor} flex items-center justify-center ${cap.accentColor}`}>
+                      <div className={`w-10 h-10 rounded-xl ${cap.bgColor} flex items-center justify-center ${cap.accentColor} transition-transform group-hover:scale-105 duration-200`}>
                         <Icon className="w-5 h-5" />
                       </div>
                       <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400">
@@ -159,7 +181,7 @@ export function LandingCapabilities() {
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-bold text-neutral-950 dark:text-white">
+                      <h3 className="text-lg font-bold text-neutral-950 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {cap.title}
                       </h3>
                       <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mt-0.5">

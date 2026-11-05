@@ -21,21 +21,17 @@ import {
   Search,
   Filter,
 } from 'lucide-react';
+import { BackgroundGrid } from './background-grid';
 
 export function LandingHero() {
   const { user } = useAuth();
 
   return (
     <section className="relative pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
-      {/* Background Subtle Radial Glow & Grid Pattern */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center opacity-40 dark:opacity-20"
-      >
-        <div className="w-[680px] h-[450px] bg-gradient-to-tr from-neutral-200 via-neutral-100 to-transparent dark:from-neutral-800 dark:via-neutral-900 rounded-full blur-3xl transform -translate-y-12" />
-      </div>
+      {/* Background Dot Matrix with Radial Vignette */}
+      <BackgroundGrid variant="dots" size={28} glow="subtle" fade="radial" opacity={0.8} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Hero Copy with Motion */}
         <div className="text-center max-w-3xl mx-auto space-y-6">
           {/* Badge */}

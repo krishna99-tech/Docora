@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { FadeIn, StaggerContainer, StaggerItem } from './motion-wrapper';
+import { BackgroundGrid } from './background-grid';
 
 export function LandingSecurity() {
   const securityFeatures = [
@@ -54,8 +55,11 @@ export function LandingSecurity() {
   ];
 
   return (
-    <section id="security" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="security" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+      {/* Cryptographic Isometric Mesh with Emerald Glow */}
+      <BackgroundGrid variant="mesh" size={32} glow="emerald" fade="radial" opacity={0.75} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <FadeIn direction="up" className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">

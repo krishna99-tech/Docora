@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import './globals.css';
 import { Providers } from './providers';
 
@@ -29,10 +28,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <Script
-          id="docora-theme-init"
-          strategy="beforeInteractive"
+      <body
+        className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased"
+        suppressHydrationWarning
+      >
+        <script
+          id="docautomate-theme-init"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -51,12 +52,8 @@ export default function RootLayout({
               })();
             `,
           }}
+          suppressHydrationWarning
         />
-      </head>
-      <body
-        className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased"
-        suppressHydrationWarning
-      >
         <Providers>
           <OfflineBanner />
           {children}

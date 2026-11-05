@@ -6,23 +6,25 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/app/providers';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { FadeIn } from './motion-wrapper';
+import { BackgroundGrid } from './background-grid';
 
 export function LandingCTA() {
   const { user } = useAuth();
 
   return (
-    <section className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a] relative overflow-hidden">
-      {/* Background Subtle Radial Glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-30 dark:opacity-20 -z-10"
-      >
-        <div className="w-[600px] h-[300px] bg-gradient-to-r from-neutral-200 via-neutral-100 to-transparent dark:from-neutral-800 dark:via-neutral-900 rounded-full blur-3xl" />
-      </div>
+    <section className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+      {/* Background Squares Matrix with Multi-Color Mixed Aurora Glow */}
+      <BackgroundGrid variant="squares" size={40} glow="mixed" fade="radial" opacity={0.85} />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <FadeIn direction="up">
           <div className="rounded-3xl bg-neutral-950 text-white dark:bg-[#141414] dark:border dark:border-neutral-800 p-8 sm:p-14 text-center space-y-6 shadow-2xl relative">
+            {/* Ambient Mixed Aurora Outer Glow Halo */}
+            <div
+              aria-hidden="true"
+              className="absolute -inset-[1.5px] rounded-[26px] bg-gradient-to-r from-blue-500 via-purple-500 via-emerald-500 via-amber-500 to-rose-500 opacity-40 blur-sm pointer-events-none -z-10"
+            />
+
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white/90 border border-white/15">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>Start Building in Seconds</span>

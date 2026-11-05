@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Check, ArrowRight } from 'lucide-react';
 import { FadeIn, StaggerContainer, StaggerItem } from './motion-wrapper';
+import { BackgroundGrid } from './background-grid';
 
 export function LandingPricing() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
@@ -72,8 +73,11 @@ export function LandingPricing() {
   ];
 
   return (
-    <section id="pricing" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="pricing" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+      {/* Precision Dot Grid */}
+      <BackgroundGrid variant="dots" size={24} glow="none" fade="radial" opacity={0.75} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <FadeIn direction="up" className="text-center max-w-2xl mx-auto space-y-4">
           <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -124,14 +128,22 @@ export function LandingPricing() {
             <StaggerItem key={plan.name} className="h-full">
               <motion.div
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className={`relative h-full rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-colors ${
+                className={`relative h-full rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all ${
                   plan.highlighted
-                    ? 'bg-neutral-950 text-white dark:bg-neutral-900 dark:text-white border-2 border-neutral-950 dark:border-white/30 shadow-xl'
+                    ? 'bg-neutral-950 text-white dark:bg-neutral-900 dark:text-white border border-neutral-800 shadow-2xl'
                     : 'bg-white text-neutral-900 dark:bg-[#121212] dark:text-neutral-100 border border-neutral-200 dark:border-neutral-800 shadow-xs hover:border-neutral-400 dark:hover:border-neutral-600'
                 }`}
               >
+                {/* Mixed Aurora Gradient Highlight Frame for Pro Card */}
+                {plan.highlighted && (
+                  <div
+                    aria-hidden="true"
+                    className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-blue-500 via-purple-500 via-emerald-500 to-amber-500 -z-10 opacity-70 blur-[1px] pointer-events-none"
+                  />
+                )}
+
                 {plan.badge && (
-                  <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-white shadow-xs">
+                  <div className="absolute -top-3.5 left-1/2 transform -translate-x-1/2 px-3.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r from-blue-600 via-purple-600 to-rose-600 text-white shadow-md">
                     {plan.badge}
                   </div>
                 )}

@@ -21,6 +21,7 @@ import {
 import { markdownToSections, extractTitleMetadata } from '@/lib/markdown-pdf';
 import { GeneralDocPreview } from '@/components/preview/general-doc-preview';
 import { FadeIn } from './motion-wrapper';
+import { BackgroundGrid } from './background-grid';
 
 interface Preset {
   id: string;
@@ -170,34 +171,34 @@ export function LandingInteractiveDemo() {
   };
 
   return (
-    <section id="demo" className="py-24 bg-neutral-50/70 dark:bg-[#070707] border-y border-neutral-200/80 dark:border-neutral-800/80 relative overflow-hidden">
-      {/* Decorative Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-neutral-200/40 via-neutral-100/20 to-transparent dark:from-neutral-800/20 dark:via-neutral-900/10 rounded-full blur-3xl pointer-events-none" />
+    <section id="demo" className="py-10 sm:py-14 bg-neutral-50/70 dark:bg-[#070707] border-y border-neutral-200/80 dark:border-neutral-800/80 relative overflow-hidden">
+      {/* Precision Crosshair Matrix Background */}
+      <BackgroundGrid variant="crosshair" size={36} glow="amber" fade="radial" opacity={0.65} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Section Header */}
-        <FadeIn direction="up" className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-neutral-200/70 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 border border-neutral-300/60 dark:border-neutral-700">
-            <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-            <span>Live Interactive Playground</span>
+        {/* Compact Section Header */}
+        <FadeIn direction="up" className="text-center max-w-2xl mx-auto space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-200/70 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 border border-neutral-300/60 dark:border-neutral-700">
+            <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
+            <span>Interactive Playground</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-neutral-950 dark:text-white leading-tight">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-neutral-950 dark:text-white leading-tight">
             Write Markdown.{' '}
             <span className="text-neutral-500 dark:text-neutral-400">Compile Instant Pixel-Perfect PDFs.</span>
           </h2>
 
-          <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
-            Experience our dual-engine document renderer right in your browser. Edit markdown, test dynamic tables, or switch between pre-built enterprise templates with real-time A4 pagination.
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
+            Experience our dual-engine document renderer right in your browser. Edit markdown, test dynamic tables, or switch between pre-built templates with instant single-page flip preview.
           </p>
         </FadeIn>
 
-        {/* Demo Controls Bar */}
-        <FadeIn direction="up" delay={0.15} className="mt-10 flex flex-wrap items-center justify-between gap-4 p-2 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm">
+        {/* Compact Demo Controls Bar */}
+        <FadeIn direction="up" delay={0.1} className="mt-6 mb-3 flex flex-wrap items-center justify-between gap-3 p-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs">
           {/* Preset Chips */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 px-3 hidden sm:inline">
-              Presets:
+          <div className="flex items-center gap-1 flex-wrap">
+            <span className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 px-2.5 hidden sm:inline">
+              Templates:
             </span>
             {PRESETS.map((preset) => {
               const isActive = activePreset === preset.id;
@@ -205,15 +206,15 @@ export function LandingInteractiveDemo() {
                 <button
                   key={preset.id}
                   onClick={() => handleSelectPreset(preset)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
                     isActive
-                      ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 shadow-xs'
+                      ? 'bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 shadow-2xs'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <span>{preset.name}</span>
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-md ${
+                    className={`text-[9px] px-1 py-0.2 rounded ${
                       isActive
                         ? 'bg-neutral-800 text-neutral-200 dark:bg-neutral-200 dark:text-neutral-800'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
@@ -229,10 +230,10 @@ export function LandingInteractiveDemo() {
           {/* View Toggles & Actions */}
           <div className="flex items-center gap-2 ml-auto">
             {/* View Mode Buttons (Mobile & Desktop) */}
-            <div className="flex items-center p-1 bg-neutral-100 dark:bg-neutral-800/80 rounded-xl text-xs font-medium">
+            <div className="flex items-center p-0.5 bg-neutral-100 dark:bg-neutral-800/80 rounded-lg text-xs font-medium">
               <button
                 onClick={() => setViewMode('editor')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all text-xs ${
                   viewMode === 'editor'
                     ? 'bg-white dark:bg-neutral-700 text-neutral-950 dark:text-white shadow-2xs'
                     : 'text-neutral-600 dark:text-neutral-400'
@@ -243,7 +244,7 @@ export function LandingInteractiveDemo() {
               </button>
               <button
                 onClick={() => setViewMode('split')}
-                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all ${
+                className={`hidden md:flex items-center gap-1 px-2.5 py-1 rounded-md transition-all text-xs ${
                   viewMode === 'split'
                     ? 'bg-white dark:bg-neutral-700 text-neutral-950 dark:text-white shadow-2xs'
                     : 'text-neutral-600 dark:text-neutral-400'
@@ -254,79 +255,79 @@ export function LandingInteractiveDemo() {
               </button>
               <button
                 onClick={() => setViewMode('preview')}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all text-xs ${
                   viewMode === 'preview'
                     ? 'bg-white dark:bg-neutral-700 text-neutral-950 dark:text-white shadow-2xs'
                     : 'text-neutral-600 dark:text-neutral-400'
                 }`}
               >
                 <Eye className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Live Preview</span>
+                <span className="hidden sm:inline">Preview</span>
               </button>
             </div>
 
             {/* Launch Full Studio Link */}
             <Link
               href="/pdf-generator"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-xs"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-neutral-950 text-white dark:bg-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all shadow-2xs"
             >
-              <span>Open in Studio</span>
+              <span>Full Studio</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </FadeIn>
 
-        {/* Live Interactive Workspace Box */}
-        <FadeIn direction="up" delay={0.25} className="mt-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-12 min-h-[640px]">
+        {/* Live Interactive Workspace Box with Compact Height */}
+        <FadeIn direction="up" delay={0.2} className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-12 h-[480px] sm:h-[500px]">
             {/* Left: Markdown Editor */}
             {(viewMode === 'split' || viewMode === 'editor') && (
               <div
-                className={`flex flex-col border-b md:border-b-0 md:border-r border-neutral-200 dark:border-neutral-800 ${
+                className={`flex flex-col h-full border-b md:border-b-0 md:border-r border-neutral-200 dark:border-neutral-800 ${
                   viewMode === 'split' ? 'md:col-span-5' : 'md:col-span-12'
                 }`}
               >
                 {/* Editor Header Bar */}
-                <div className="flex items-center justify-between px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-800 text-xs">
-                  <div className="flex items-center gap-2 font-mono text-neutral-500 dark:text-neutral-400">
-                    <Code2 className="w-4 h-4 text-neutral-700 dark:text-neutral-300" />
+                <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-50 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-800 text-xs">
+                  <div className="flex items-center gap-1.5 font-mono text-neutral-500 dark:text-neutral-400 text-[11px]">
+                    <Code2 className="w-3.5 h-3.5 text-neutral-700 dark:text-neutral-300" />
                     <span>markdown_input.md</span>
                   </div>
 
                   {/* Snippet Insertion Shortcuts */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     <button
                       onClick={() => handleInsertSnippet('## New Section Title\nDetailed content goes here.')}
                       title="Insert Heading"
-                      className="p-1.5 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors"
+                      className="p-1 rounded hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors"
                     >
                       <Heading className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleInsertSnippet('| Metric | Target | Status |\n| --- | --- | --- |\n| Throughput | 500 req/s | Active |\n| Uptime | 99.99% | Verified |')}
                       title="Insert Table"
-                      className="p-1.5 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors"
+                      className="p-1 rounded hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors"
                     >
                       <TableIcon className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleInsertSnippet('- **Client**: Global Corp\n- **Status**: Operational')}
                       title="Insert Key-Value"
-                      className="p-1.5 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors"
+                      className="p-1 rounded hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors"
                     >
                       <span className="text-[10px] font-bold font-mono">KV</span>
                     </button>
                     <button
                       onClick={handleCopyMarkdown}
                       title="Copy Markdown"
-                      className="p-1.5 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors ml-1"
+                      className="p-1 rounded hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors ml-1"
                     >
                       {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                     <button
                       onClick={() => setMarkdown(selectedPreset.markdown)}
                       title="Reset to Preset"
-                      className="p-1.5 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors"
+                      className="p-1 rounded hover:bg-neutral-200/60 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
                     </button>
@@ -337,50 +338,49 @@ export function LandingInteractiveDemo() {
                 <textarea
                   value={markdown}
                   onChange={(e) => setMarkdown(e.target.value)}
-                  className="flex-1 w-full p-4 font-mono text-xs text-neutral-900 dark:text-neutral-100 bg-transparent resize-none focus:outline-hidden leading-relaxed"
+                  className="flex-1 w-full p-3 font-mono text-[11px] text-neutral-900 dark:text-neutral-100 bg-transparent resize-none focus:outline-hidden leading-relaxed"
                   placeholder="Type or paste Markdown here..."
-                  rows={26}
                   spellCheck={false}
                 />
 
                 {/* Editor Footer Status */}
-                <div className="px-4 py-2 bg-neutral-50 dark:bg-neutral-900/60 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span>Live Bi-Directional Parser Ready</span>
+                <div className="px-3 py-1.5 bg-neutral-50 dark:bg-neutral-900/60 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[10px] text-neutral-500 dark:text-neutral-400">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span>Real-time Bi-Directional Parser</span>
                   </div>
-                  <span>{parsedSections.length} Sections Extracted</span>
+                  <span>{parsedSections.length} Sections</span>
                 </div>
               </div>
             )}
 
-            {/* Right: Instant A4 Multi-Page Live Preview */}
+            {/* Right: Instant A4 Multi-Page Live Preview (Single Page Flip by Default) */}
             {(viewMode === 'split' || viewMode === 'preview') && (
               <div
-                className={`flex flex-col bg-neutral-100/70 dark:bg-[#0c0c0c] overflow-y-auto ${
+                className={`flex flex-col h-full bg-neutral-100/70 dark:bg-[#0c0c0c] ${
                   viewMode === 'split' ? 'md:col-span-7' : 'md:col-span-12'
                 }`}
               >
                 {/* Preview Toolbar */}
-                <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-2.5 bg-neutral-50/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 text-xs">
+                <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-50/90 dark:bg-neutral-900/90 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 text-xs">
                   <div className="flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
-                    <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                      Real-Time Compiled Document
+                    <Eye className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-400" />
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-200 text-xs">
+                      Instant Live Compilation
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/80">
-                      Chromium Engine Ready
+                    <span className="px-1.5 py-0.2 rounded-full text-[9px] font-medium bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/80">
+                      Single-Page Flip
                     </span>
                   </div>
 
-                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
+                  <div className="text-[10px] text-neutral-500 dark:text-neutral-400 font-mono">
                     A4 Portrait &bull; 0.5 in Margins
                   </div>
                 </div>
 
                 {/* Rendered Scaled Document Container */}
-                <div className="p-4 sm:p-6 flex justify-center items-start overflow-x-auto">
-                  <div className="transform scale-[0.82] sm:scale-[0.88] origin-top transition-transform duration-200">
+                <div className="flex-1 p-2 sm:p-3 overflow-y-auto overflow-x-auto flex justify-center items-start">
+                  <div className="transform scale-[0.70] sm:scale-[0.76] origin-top transition-transform duration-200">
                     <GeneralDocPreview
                       title={title || selectedPreset.title}
                       subtitle={subtitle || selectedPreset.subtitle}
@@ -390,8 +390,9 @@ export function LandingInteractiveDemo() {
                       includeHeader={true}
                       includeFooter={true}
                       includePageNumbers={true}
+                      defaultPageViewMode="single"
                       sections={parsedSections}
-                      documentNumber={`DOC-${Date.now().toString().slice(-6)}`}
+                      documentNumber="DOC-2026-08942"
                     />
                   </div>
                 </div>

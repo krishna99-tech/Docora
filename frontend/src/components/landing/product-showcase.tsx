@@ -26,6 +26,7 @@ import {
   GitBranch,
 } from 'lucide-react';
 import { FadeIn } from './motion-wrapper';
+import { BackgroundGrid } from './background-grid';
 
 export function LandingProductShowcase() {
   const [activeTab, setActiveTab] = useState<
@@ -33,16 +34,19 @@ export function LandingProductShowcase() {
   >('library');
 
   const tabs = [
-    { id: 'library', label: 'Document Library', icon: FolderOpen },
-    { id: 'pdftools', label: 'PDF Utilities', icon: Layers },
-    { id: 'templates', label: 'Templates', icon: LayoutTemplate },
-    { id: 'workflows', label: 'Workflows', icon: Workflow },
-    { id: 'verification', label: 'Verification Portal', icon: ShieldCheck },
+    { id: 'library', label: 'Document Library', icon: FolderOpen, color: 'text-rose-500', activeRing: 'border-rose-500/50' },
+    { id: 'pdftools', label: 'PDF Utilities', icon: Layers, color: 'text-purple-500', activeRing: 'border-purple-500/50' },
+    { id: 'templates', label: 'Templates', icon: LayoutTemplate, color: 'text-blue-500', activeRing: 'border-blue-500/50' },
+    { id: 'workflows', label: 'Workflows', icon: Workflow, color: 'text-amber-500', activeRing: 'border-amber-500/50' },
+    { id: 'verification', label: 'Verification Portal', icon: ShieldCheck, color: 'text-emerald-500', activeRing: 'border-emerald-500/50' },
   ] as const;
 
   return (
-    <section id="showcase" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-[#0c0c0c]/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="showcase" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-[#0c0c0c]/50 overflow-hidden">
+      {/* Background Mixed Mesh Grid */}
+      <BackgroundGrid variant="mesh" size={32} glow="mixed" fade="radial" opacity={0.65} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <FadeIn direction="up" className="text-center max-w-2xl mx-auto space-y-3">
           <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -69,11 +73,11 @@ export function LandingProductShowcase() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
                     isActive
-                      ? 'bg-white dark:bg-neutral-900 text-neutral-950 dark:text-white shadow-xs'
+                      ? `bg-white dark:bg-neutral-900 text-neutral-950 dark:text-white shadow-xs border ${tab.activeRing}`
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-white'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? tab.color : 'text-neutral-400'}`} />
                   {tab.label}
                 </button>
               );

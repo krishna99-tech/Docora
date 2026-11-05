@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { FadeIn, StaggerContainer, StaggerItem } from './motion-wrapper';
+import { BackgroundGrid } from './background-grid';
 
 export function LandingHowItWorks() {
   const steps = [
@@ -20,6 +21,8 @@ export function LandingHowItWorks() {
       description:
         'Select from verified financial layouts, design dynamic sections, or import Markdown directly. Real-time preview updates on every keystroke.',
       icon: FilePlus2,
+      accentBg: 'bg-blue-600 text-white shadow-blue-500/25',
+      iconColor: 'text-blue-500 dark:text-blue-400',
     },
     {
       number: '02',
@@ -28,6 +31,8 @@ export function LandingHowItWorks() {
       description:
         'Merge supporting attachments, extract critical pages, compress file sizes, and apply security watermarks and continuous pagination.',
       icon: SlidersHorizontal,
+      accentBg: 'bg-purple-600 text-white shadow-purple-500/25',
+      iconColor: 'text-purple-500 dark:text-purple-400',
     },
     {
       number: '03',
@@ -36,6 +41,8 @@ export function LandingHowItWorks() {
       description:
         'Set up automated validation rules, route through executive sign-offs, and trigger webhook events automatically upon finalization.',
       icon: GitBranch,
+      accentBg: 'bg-amber-600 text-white shadow-amber-500/25',
+      iconColor: 'text-amber-500 dark:text-amber-400',
     },
     {
       number: '04',
@@ -44,12 +51,17 @@ export function LandingHowItWorks() {
       description:
         'Deliver password-protected links with automatic expiration. Recipients scan the embedded QR code to verify authenticity via SHA-256 integrity.',
       icon: ShieldCheck,
+      accentBg: 'bg-emerald-600 text-white shadow-emerald-500/25',
+      iconColor: 'text-emerald-500 dark:text-emerald-400',
     },
   ];
 
   return (
-    <section id="how-it-works" className="py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a] overflow-hidden">
+      {/* Blueprint Subgrid Pattern */}
+      <BackgroundGrid variant="blueprint" size={48} fade="radial" opacity={0.7} />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <FadeIn direction="up" className="text-center max-w-2xl mx-auto space-y-3">
           <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -65,10 +77,10 @@ export function LandingHowItWorks() {
 
         {/* 4-Step Process Timeline */}
         <div className="mt-16 relative">
-          {/* Desktop Connecting Line */}
+          {/* Desktop Connecting Mixed Gradient Track */}
           <div
             aria-hidden="true"
-            className="hidden lg:block absolute top-7 left-12 right-12 h-0.5 bg-gradient-to-r from-neutral-200 via-neutral-300 to-neutral-200 dark:from-neutral-800 dark:via-neutral-700 dark:to-neutral-800 z-0"
+            className="hidden lg:block absolute top-7 left-14 right-14 h-1 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 via-amber-500 to-emerald-500 opacity-70 z-0 shadow-xs"
           />
 
           <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
@@ -78,15 +90,15 @@ export function LandingHowItWorks() {
                 <StaggerItem key={step.number}>
                   <motion.div
                     whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                    className="h-full rounded-2xl bg-neutral-50/70 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800/80 p-6 flex flex-col justify-between hover:border-neutral-400 dark:hover:border-neutral-700 transition-colors shadow-2xs"
+                    className="h-full rounded-2xl bg-white/80 dark:bg-neutral-900/50 backdrop-blur-xs border border-neutral-200/90 dark:border-neutral-800/80 p-6 flex flex-col justify-between hover:border-neutral-400 dark:hover:border-neutral-700 transition-colors shadow-xs hover:shadow-md"
                   >
                     <div className="space-y-4">
                       {/* Step badge & icon */}
                       <div className="flex items-center justify-between">
-                        <div className="w-12 h-12 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center font-black text-sm shadow-xs">
+                        <div className={`w-12 h-12 rounded-xl ${step.accentBg} flex items-center justify-center font-black text-sm shadow-md`}>
                           {step.number}
                         </div>
-                        <div className="w-9 h-9 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-700 dark:text-neutral-300">
+                        <div className={`w-9 h-9 rounded-lg bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center ${step.iconColor}`}>
                           <Icon className="w-4 h-4" />
                         </div>
                       </div>

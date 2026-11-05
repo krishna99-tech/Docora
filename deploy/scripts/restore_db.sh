@@ -5,8 +5,8 @@ set -eo pipefail
 BACKUP_FILE="$1"
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
-DB_USER="${DB_USER:-postgres}"
-DB_NAME="${DB_NAME:-docora}"
+DB_USER="${DB_USER:-${POSTGRES_USER:-docora_user}}"
+DB_NAME="${DB_NAME:-${POSTGRES_DB:-docora_db}}"
 
 if [ -z "${BACKUP_FILE}" ]; then
   echo "Usage: $0 <path_to_backup_file.dump>"
